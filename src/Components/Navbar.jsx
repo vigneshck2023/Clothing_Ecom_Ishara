@@ -17,7 +17,7 @@ const Navbar = ({ setSearchResults, setIsSearching, setSearchQuery }) => {
   const cartCount = cartItems.reduce((total, item) => total + item.qty, 0);
   const wishlistCount = wishlistItems.length;
 
-  // 🔎 Handle search input
+  // Handle search input
   const handleSearch = async (e) => {
     const value = e.target.value;
     setQuery(value);
@@ -42,7 +42,7 @@ const Navbar = ({ setSearchResults, setIsSearching, setSearchQuery }) => {
     }
   };
 
-  // 👤 Handle login/logout
+  // Handle login/logout
   const handleAuth = () => {
     if (isLoggedIn) {
       toast.success("👋 Logged out successfully!");
