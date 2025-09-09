@@ -129,7 +129,7 @@ const Cart = () => {
               ))}
             </div>
 
-            {/* 💳 Price Details */}
+            {/* Price Details */}
             <div className="col-lg-4">
               <div className="card shadow-sm p-3">
                 <h5 className="mb-3">Price Details</h5>
