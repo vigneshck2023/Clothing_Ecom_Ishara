@@ -54,8 +54,8 @@ const Navbar = ({ setSearchResults, setIsSearching, setSearchQuery }) => {
 
   return (
     <>
-      <nav className="navbar navbar-expand-lg navbar-light bg-white border-bottom px-3">
-        <div className="container-fluid">
+      <nav className="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+        <div className="container-fluid px-4">
           {/* Logo and Toggle Button */}
           <div className="d-flex align-items-center">
             <button
@@ -71,7 +71,7 @@ const Navbar = ({ setSearchResults, setIsSearching, setSearchQuery }) => {
             </button>
             <NavLink
               to="/"
-              className="navbar-brand"
+              className="navbar-brand m-0"
               style={{
                 fontFamily: "'Montserrat', serif",
                 fontWeight: "900",
@@ -120,14 +120,14 @@ const Navbar = ({ setSearchResults, setIsSearching, setSearchQuery }) => {
             {/* Wishlist, Cart & Auth */}
             <div className="d-flex align-items-center gap-3 ms-lg-auto">
               <NavLink to="/wishlist" className="position-relative">
-                <FaHeart className="fs-5 text-secondary" />
+                <FaHeart className="fs-4 text-secondary" />
                 {wishlistCount > 0 && (
                   <span className="badge-count">{wishlistCount}</span>
                 )}
               </NavLink>
 
               <NavLink to="/cart" className="position-relative">
-                <FaShoppingCart className="fs-5 text-secondary" />
+                <FaShoppingCart className="fs-4 text-secondary" />
                 {cartCount > 0 && (
                   <span className="badge-count">{cartCount}</span>
                 )}
@@ -135,7 +135,8 @@ const Navbar = ({ setSearchResults, setIsSearching, setSearchQuery }) => {
 
               <button
                 onClick={handleAuth}
-                className="btn btn-outline-dark btn-sm px-3"
+                className="btn btn-outline-dark btn-sm px-4 py-2"
+                style={{ fontSize: "1rem" }}
               >
                 {isLoggedIn ? "Logout" : "Login"}
               </button>
