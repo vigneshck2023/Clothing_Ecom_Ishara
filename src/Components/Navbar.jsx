@@ -1,18 +1,21 @@
-// Navbar.jsx
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { NavLink } from "react-router-dom";
 import { FaHeart, FaShoppingCart, FaSearch } from "react-icons/fa";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+import { CartContext } from "../contexts/CartContex";
+import { WishlistContext } from "../contexts/WishlistContext";
 import "../styles.css";
 
 const Navbar = ({ setSearchResults, setIsSearching, setSearchQuery }) => {
   const [query, setQuery] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const wishlistCount = 0;
-  const cartCount = 0;
+  const { cartItems } = useContext(CartContext);
+  const { wishlistItems } = useContext(WishlistContext);
+  const cartCount = cartItems.reduce((total, item) => total + item.qty, 0);
+  const wishlistCount = wishlistItems.length;
 
   // 🔎 Handle search input
   const handleSearch = async (e) => {
@@ -94,7 +97,7 @@ const Navbar = ({ setSearchResults, setIsSearching, setSearchQuery }) => {
 
           {/* Search and Menu Items */}
           <div className="collapse navbar-collapse" id="navbarContent">
-            {/* ✅ Search Bar (centered + responsive) */}
+            {/* Search Bar */}
             <div className="mx-auto my-3 my-lg-0 w-100 d-flex justify-content-center">
               <div
                 className="input-group"

@@ -1,6 +1,7 @@
-import React from "react";
-
+import React, { useContext } from "react";
+import { CartContext } from "../contexts/CartContex";
 function ProductCard({ product }) {
+  const { addToCart } = useContext(CartContext);
   return (
     <div className="card h-100 shadow-sm category-card">
       {/* Image section */}
@@ -19,7 +20,18 @@ function ProductCard({ product }) {
 
         {/* Push button to bottom */}
         <div className="mt-auto">
-          <button className="btn btn-primary w-100">View Details</button>
+          <button
+            className="btn btn-outline-primary w-100"
+            onClick={() => addToCart(product)}
+            style={{
+              borderRadius: "35px",
+              fontWeight: "550",
+              fontSize: "17px",
+              padding: "8px",
+            }}
+          >
+            Add to Cart
+          </button>
         </div>
       </div>
     </div>
