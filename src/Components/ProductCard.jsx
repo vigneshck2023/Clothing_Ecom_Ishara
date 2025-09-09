@@ -1,15 +1,26 @@
 import React, { useContext } from "react";
 import { CartContext } from "../contexts/CartContex";
+
 function ProductCard({ product }) {
   const { addToCart } = useContext(CartContext);
+
   return (
-    <div className="card h-100 shadow-sm category-card px-4">
+    <div
+      className="card h-100 shadow-sm category-card"
+      style={{
+        width: "310px",
+        margin: "auto",
+      }}
+    >
       {/* Image section */}
       <img
         src={product.image || product.images?.[0] || "/placeholder.png"}
         alt={product.name}
         className="card-img-top product-img"
-        style={{ objectFit: "cover", height: "400px" }}
+        style={{
+          objectFit: "cover",
+          height: "400px",
+        }}
       />
 
       {/* Card body */}
