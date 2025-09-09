@@ -52,16 +52,17 @@ function CategoryCard() {
         setSearchQuery={setSearchQuery}
       />
 
-      <div className="container mt-4">
+      {/* ✅ Align content with Navbar */}
+      <div className="container-fluid px-4 mt-4">
         {isSearching ? (
           <>
             <h2 className="mb-3">Search Results</h2>
-            <div className="row">
+            <div className="row g-4">
               {filteredResults.length > 0 ? (
                 filteredResults.map((product) => (
                   <div
                     key={product._id}
-                    className="col-12 col-sm-6 col-md-4 col-lg-3 mb-4"
+                    className="col-12 col-sm-6 col-md-4 col-lg-3"
                   >
                     <ProductCard product={product} />
                   </div>
@@ -77,12 +78,12 @@ function CategoryCard() {
               {decodeURIComponent(categoryName)} Collection
             </h2>
             {error && <p className="text-danger">{error}</p>}
-            <div className="row">
+            <div className="row g-4">
               {products.length > 0
                 ? products.map((product) => (
                     <div
                       key={product._id}
-                      className="col-12 col-sm-6 col-md-4 col-lg-3 mb-4"
+                      className="col-12 col-sm-6 col-md-4 col-lg-3"
                     >
                       <ProductCard product={product} />
                     </div>

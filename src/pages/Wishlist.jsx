@@ -15,8 +15,11 @@ const Wishlist = () => {
   return (
     <>
       <Navbar />
-      <div className="container my-4">
+      
+      {/* ✅ Aligned with Navbar */}
+      <div className="container-fluid px-4 my-4">
         <h2 className="mb-4">Your Wishlist</h2>
+
         {wishlistItems.length > 0 ? (
           <div className="row g-3">
             {wishlistItems.map((item, index) => (

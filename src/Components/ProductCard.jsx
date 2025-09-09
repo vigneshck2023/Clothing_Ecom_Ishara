@@ -3,7 +3,7 @@ import { CartContext } from "../contexts/CartContex";
 function ProductCard({ product }) {
   const { addToCart } = useContext(CartContext);
   return (
-    <div className="card h-100 shadow-sm category-card">
+    <div className="card h-100 shadow-sm category-card px-4">
       {/* Image section */}
       <img
         src={product.image || product.images?.[0] || "/placeholder.png"}

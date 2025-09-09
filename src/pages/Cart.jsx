@@ -11,10 +11,12 @@ const Cart = () => {
     useContext(CartContext);
   const { addToWishlist } = useContext(WishlistContext);
   const navigate = useNavigate();
+
   const moveToWishlist = (item) => {
     addToWishlist(item);
     removeFromCart(item.id);
   };
+
   const totalMRP = cartItems.reduce(
     (total, item) => total + item.originalPrice * item.qty,
     0
@@ -39,7 +41,9 @@ const Cart = () => {
   return (
     <>
       <Navbar />
-      <div className="container my-4">
+
+      {/* ✅ Align content with Navbar */}
+      <div className="container-fluid px-4 my-4">
         <h2 className="mb-4">Your Cart</h2>
 
         {cartItems.length > 0 ? (
@@ -94,7 +98,7 @@ const Cart = () => {
                           </button>
                         </div>
 
-                        {/* Remove Button */}
+                        {/* Remove & Wishlist Buttons */}
                         <div className="mt-auto d-flex gap-2">
                           <button
                             className="btn btn-outline-danger btn-sm"
