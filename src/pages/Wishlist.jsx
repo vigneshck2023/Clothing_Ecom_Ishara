@@ -10,21 +10,30 @@ const Wishlist = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedSize, setSelectedSize] = useState("");
 
-  const moveToCart = () => {
+  const moveToCart = (item) => {
+    // Only prompt for size if it's not already selected
+    if (!item.selectedSize) {
+      setSelectedItem(item);
+      return;
+    }
+    addToCart({ ...item, selectedSize: item.selectedSize });
+    removeFromWishlist(item.id, item.selectedSize);
+  };
+
+  const confirmSizeForCart = () => {
     if (!selectedSize) {
       alert("⚠️ Please select a size before adding to cart.");
       return;
     }
     addToCart({ ...selectedItem, selectedSize });
-    removeFromWishlist(selectedItem.id);
-    setSelectedItem(null); // close modal
+    removeFromWishlist(selectedItem.id, selectedSize);
+    setSelectedItem(null);
     setSelectedSize("");
   };
 
   return (
     <>
       <Navbar />
-
       <div className="container my-4">
         <h2 className="mb-4">Your Wishlist</h2>
 
@@ -34,10 +43,7 @@ const Wishlist = () => {
               <div key={index} className="col-12">
                 <div className="card shadow-sm p-2">
                   <div className="d-flex align-items-center">
-                    <div
-                      className="me-3"
-                      style={{ width: "120px", flexShrink: 0 }}
-                    >
+                    <div className="me-3" style={{ width: "120px", flexShrink: 0 }}>
                       <img
                         src={item.image || item.images?.[0] || "/placeholder.png"}
                         alt={item.name}
@@ -54,19 +60,24 @@ const Wishlist = () => {
 
                     <div className="flex-grow-1 d-flex flex-column">
                       <h6 className="mb-1">{item.name}</h6>
+                      {item.selectedSize && (
+                        <p className="text-muted small mb-1">
+                          Size: {item.selectedSize}
+                        </p>
+                      )}
                       <p className="fw-bold mb-2">₹{item.price}</p>
 
                       <div className="mt-auto d-flex gap-2">
                         <button
                           className="btn btn-outline-danger btn-sm"
-                          onClick={() => removeFromWishlist(item.id)}
+                          onClick={() => removeFromWishlist(item.id, item.selectedSize)}
                         >
                           Remove
                         </button>
 
                         <button
                           className="btn btn-outline-primary btn-sm"
-                          onClick={() => setSelectedItem(item)}
+                          onClick={() => moveToCart(item)}
                         >
                           Move to Cart
                         </button>
@@ -84,49 +95,48 @@ const Wishlist = () => {
         )}
       </div>
 
-  {/* Size Selection Modal */}
-{selectedItem && (
-  <div
-    className="modal fade show"
-    style={{ display: "block", backgroundColor: "rgba(0,0,0,0.5)" }}
-  >
-    <div className="modal-dialog modal-dialog-centered">
-      <div className="modal-content p-3">
-        <h5>Select Size for {selectedItem.name}</h5>
+      {/* Size Selection Modal */}
+      {selectedItem && (
+        <div
+          className="modal fade show"
+          style={{ display: "block", backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content p-3">
+              <h5>Select Size for {selectedItem.name}</h5>
 
-        <div className="d-flex flex-wrap gap-2 my-3">
-          {(selectedItem.sizes && selectedItem.sizes.length > 0
-            ? selectedItem.sizes
-            : ["Free Size"] // fallback
-          ).map((size) => (
-            <button
-              key={size}
-              className={`btn ${
-                selectedSize === size ? "btn-primary" : "btn-outline-primary"
-              }`}
-              onClick={() => setSelectedSize(size)}
-            >
-              {size}
-            </button>
-          ))}
+              <div className="d-flex flex-wrap gap-2 my-3">
+                {(selectedItem.sizes && selectedItem.sizes.length > 0
+                  ? selectedItem.sizes
+                  : ["Free Size"]
+                ).map((size) => (
+                  <button
+                    key={size}
+                    className={`btn ${
+                      selectedSize === size ? "btn-primary" : "btn-outline-primary"
+                    }`}
+                    onClick={() => setSelectedSize(size)}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
+
+              <div className="d-flex justify-content-end gap-2">
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => setSelectedItem(null)}
+                >
+                  Cancel
+                </button>
+                <button className="btn btn-success" onClick={confirmSizeForCart}>
+                  Confirm
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-
-        <div className="d-flex justify-content-end gap-2">
-          <button
-            className="btn btn-secondary"
-            onClick={() => setSelectedItem(null)}
-          >
-            Cancel
-          </button>
-          <button className="btn btn-success" onClick={moveToCart}>
-            Confirm
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
-
+      )}
     </>
   );
 };

@@ -1,4 +1,3 @@
-// src/contexts/WishlistContext.js
 import React, { createContext, useState, useEffect } from "react";
 
 export const WishlistContext = createContext();
@@ -9,24 +8,32 @@ export const WishlistProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : [];
   });
 
-  // Sync with localStorage whenever wishlist changes
   useEffect(() => {
     localStorage.setItem("wishlistItems", JSON.stringify(wishlistItems));
   }, [wishlistItems]);
 
   const addToWishlist = (item) => {
     setWishlistItems((prev) => {
-      // ensure product has a unique id
       const uniqueId = item.id || item._id || crypto.randomUUID();
 
-      if (prev.find((p) => p.id === uniqueId)) return prev;
+      // check for same product + size
+      if (
+        prev.find(
+          (p) => p.id === uniqueId && p.selectedSize === item.selectedSize
+        )
+      )
+        return prev;
 
       return [...prev, { ...item, id: uniqueId }];
     });
   };
 
-  const removeFromWishlist = (id) => {
-    setWishlistItems((prev) => prev.filter((item) => item.id !== id));
+  const removeFromWishlist = (id, selectedSize) => {
+    setWishlistItems((prev) =>
+      selectedSize
+        ? prev.filter((i) => !(i.id === id && i.selectedSize === selectedSize))
+        : prev.filter((i) => i.id !== id)
+    );
   };
 
   return (
