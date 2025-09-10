@@ -119,6 +119,32 @@ function CategoryCard() {
               </p>
             </div>
 
+            {/* Category Filter */}
+<div className="mb-4">
+  <h6>Category</h6>
+  {["Men", "Women", "Kids", "Accessories"].map((cat) => (
+    <div className="form-check" key={cat}>
+      <input
+        className="form-check-input"
+        type="checkbox"
+        value={cat}
+        checked={selectedCategories.includes(cat)}
+        onChange={(e) => {
+          if (e.target.checked) {
+            setSelectedCategories([...selectedCategories, cat]);
+          } else {
+            setSelectedCategories(
+              selectedCategories.filter((c) => c !== cat)
+            );
+          }
+        }}
+      />
+      <label className="form-check-label">{cat}</label>
+    </div>
+  ))}
+</div>
+
+
             {/* Sort By */}
             <div className="mb-4">
               <h6>Sort by</h6>

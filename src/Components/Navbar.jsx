@@ -55,7 +55,7 @@ const Navbar = ({ setSearchResults, setIsSearching, setSearchQuery }) => {
   return (
     <>
       <nav className="navbar navbar-expand-lg navbar-light bg-white border-bottom px-3">
-        <div className="container-fluid">
+        <div className="container">
           {/* Logo and Toggle Button */}
           <div className="d-flex align-items-center">
             <button

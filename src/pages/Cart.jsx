@@ -40,14 +40,18 @@ const Cart = () => {
   return (
     <>
       <Navbar />
+      {/* use container for same left/right margin as Navbar */}
       <div className="container my-4">
-        <h2 className="mb-4">Your Cart</h2>
+        <h2 className="mb-4 fw-bold" style={{ marginLeft: "2px" }}>
+          Your Cart
+        </h2>
 
         {cartItems.length > 0 ? (
-          <div className="row g-3">
+          <div className="row g-3 gx-4">
+            {/* Cart Items */}
             <div className="col-lg-8">
               {cartItems.map((item, index) => (
-                <div key={index} className="col-12 mb-3">
+                <div key={index} className="col-12 mb-4">
                   <div className="card shadow-sm p-2">
                     <div className="d-flex align-items-center">
                       <div
@@ -134,6 +138,7 @@ const Cart = () => {
               ))}
             </div>
 
+            {/* Price Details */}
             <div className="col-lg-4">
               <div className="card shadow-sm p-3">
                 <h5 className="mb-3">Price Details</h5>
