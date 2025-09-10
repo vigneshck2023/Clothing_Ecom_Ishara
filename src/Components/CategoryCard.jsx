@@ -13,6 +13,12 @@ function CategoryCard() {
   const [isSearching, setIsSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Filter states
+  const [priceRange, setPriceRange] = useState([0, 5000]);
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [selectedRating, setSelectedRating] = useState(null);
+  const [sortBy, setSortBy] = useState("");
+
   useEffect(() => {
     if (!categoryName) return;
 
@@ -28,7 +34,6 @@ function CategoryCard() {
         return res.json();
       })
       .then((data) => {
-        console.log("Products from API:", data.data?.category?.products);
         setProducts(data.data?.category?.products || []);
         setError("");
       })
@@ -38,31 +43,122 @@ function CategoryCard() {
       });
   }, [categoryName]);
 
-  // Filter search results
-  const filteredResults = searchResults.filter((product) =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase())
+  // Filtered Results
+  let filteredProducts = isSearching
+    ? searchResults.filter((product) =>
+        product.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : [...products];
+
+  // Apply Price Filter
+  filteredProducts = filteredProducts.filter(
+    (p) => p.price >= priceRange[0] && p.price <= priceRange[1]
   );
+
+  // Apply Category Filter
+  if (selectedCategories.length > 0) {
+    filteredProducts = filteredProducts.filter((p) =>
+      selectedCategories.includes(p.category)
+    );
+  }
+
+  // Apply Rating Filter
+  if (selectedRating) {
+    filteredProducts = filteredProducts.filter(
+      (p) => p.rating >= selectedRating
+    );
+  }
+
+  // Apply Sorting
+  if (sortBy === "lowToHigh") {
+    filteredProducts.sort((a, b) => a.price - b.price);
+  } else if (sortBy === "highToLow") {
+    filteredProducts.sort((a, b) => b.price - a.price);
+  }
 
   return (
     <>
-      {/* Navbar with search props */}
+      {/* Navbar */}
       <Navbar
         setSearchResults={setSearchResults}
         setIsSearching={setIsSearching}
         setSearchQuery={setSearchQuery}
       />
 
-      {/* ✅ Align content with Navbar */}
-      <div className="container-fluid px-4 mt-4">
-        {isSearching ? (
-          <>
-            <h2 className="mb-3">Search Results</h2>
-            <div className="row g-4">
-              {filteredResults.length > 0 ? (
-                filteredResults.map((product) => (
+      <div className="container mt-4">
+        <div className="row">
+          {/* Sidebar Filters */}
+          <div className="col-md-3">
+            <h5 className="fw-bold">Filters</h5>
+            <button
+              className="btn btn-sm btn-link text-danger mb-3"
+              onClick={() => {
+                setPriceRange([0, 5000]);
+                setSelectedCategories([]);
+                setSelectedRating(null);
+                setSortBy("");
+              }}
+            >
+              Clear
+            </button>
+
+            {/* Price Filter */}
+            <div className="mb-4">
+              <h6>Price</h6>
+              <input
+                type="range"
+                className="form-range"
+                min="0"
+                max="5000"
+                step="100"
+                value={priceRange[1]}
+                onChange={(e) => setPriceRange([0, parseInt(e.target.value)])}
+              />
+              <p>
+                ₹{priceRange[0]} - ₹{priceRange[1]}
+              </p>
+            </div>
+
+            {/* Sort By */}
+            <div className="mb-4">
+              <h6>Sort by</h6>
+              <div className="form-check">
+                <input
+                  className="form-check-input"
+                  type="radio"
+                  name="sort"
+                  checked={sortBy === "lowToHigh"}
+                  onChange={() => setSortBy("lowToHigh")}
+                />
+                <label className="form-check-label">Price - Low to High</label>
+              </div>
+              <div className="form-check">
+                <input
+                  className="form-check-input"
+                  type="radio"
+                  name="sort"
+                  checked={sortBy === "highToLow"}
+                  onChange={() => setSortBy("highToLow")}
+                />
+                <label className="form-check-label">Price - High to Low</label>
+              </div>
+            </div>
+          </div>
+
+          {/* Products Grid */}
+          <div className="col-md-9">
+            <h2 className="mb-3">
+              {isSearching
+                ? "Search Results"
+                : `${decodeURIComponent(categoryName)} Collection`}
+            </h2>
+            {error && <p className="text-danger">{error}</p>}
+            <div className="row">
+              {filteredProducts.length > 0 ? (
+                filteredProducts.map((product) => (
                   <div
                     key={product._id}
-                    className="col-12 col-sm-6 col-md-4 col-lg-3"
+                    className="col-12 col-sm-6 col-md-4 col-lg-3 mb-4"
                   >
                     <ProductCard product={product} />
                   </div>
@@ -71,27 +167,8 @@ function CategoryCard() {
                 <p>No products found.</p>
               )}
             </div>
-          </>
-        ) : (
-          <>
-            <h2 className="mb-3">
-              {decodeURIComponent(categoryName)} Collection
-            </h2>
-            {error && <p className="text-danger">{error}</p>}
-            <div className="row g-4">
-              {products.length > 0
-                ? products.map((product) => (
-                    <div
-                      key={product._id}
-                      className="col-12 col-sm-6 col-md-4 col-lg-3"
-                    >
-                      <ProductCard product={product} />
-                    </div>
-                  ))
-                : !error && <p>No products found.</p>}
-            </div>
-          </>
-        )}
+          </div>
+        </div>
       </div>
     </>
   );

@@ -1,10 +1,10 @@
 import React, { useContext } from "react";
 import Navbar from "../Components/Navbar";
 import { CartContext } from "../contexts/CartContex";
+import { WishlistContext } from "../contexts/WishlistContext";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
-import { WishlistContext } from "../contexts/WishlistContext";
 
 const Cart = () => {
   const { cartItems, removeFromCart, increaseQty, decreaseQty, clearCart } =
@@ -14,15 +14,16 @@ const Cart = () => {
 
   const moveToWishlist = (item) => {
     addToWishlist(item);
-    removeFromCart(item.id);
+    removeFromCart(item.id, item.selectedSize);
   };
 
   const totalMRP = cartItems.reduce(
-    (total, item) => total + item.originalPrice * item.qty,
+    (total, item) => total + (item.originalPrice || item.price) * item.qty,
     0
   );
   const totalDiscount = cartItems.reduce(
-    (total, item) => total + (item.originalPrice - item.price) * item.qty,
+    (total, item) =>
+      total + ((item.originalPrice || item.price) - item.price) * item.qty,
     0
   );
   const finalPrice = cartItems.reduce(
@@ -33,28 +34,22 @@ const Cart = () => {
   const handlePlaceOrder = () => {
     toast.success("🎉 Order placed successfully!");
     clearCart();
-    setTimeout(() => {
-      navigate("/");
-    }, 2000);
+    setTimeout(() => navigate("/"), 2000);
   };
 
   return (
     <>
       <Navbar />
-
-      {/* ✅ Align content with Navbar */}
-      <div className="container-fluid px-4 my-4">
+      <div className="container my-4">
         <h2 className="mb-4">Your Cart</h2>
 
         {cartItems.length > 0 ? (
           <div className="row g-3">
-            {/* 🛒 Cart Items */}
             <div className="col-lg-8">
               {cartItems.map((item, index) => (
                 <div key={index} className="col-12 mb-3">
                   <div className="card shadow-sm p-2">
                     <div className="d-flex align-items-center">
-                      {/* Image Left */}
                       <div
                         className="me-3"
                         style={{ width: "120px", flexShrink: 0 }}
@@ -75,30 +70,35 @@ const Cart = () => {
                         />
                       </div>
 
-                      {/* Details Right */}
                       <div className="flex-grow-1 d-flex flex-column">
                         <h6 className="mb-1">{item.name}</h6>
-                        <p className="text-muted small mb-1">{item.category}</p>
+                        {item.selectedSize && (
+                          <p className="text-muted small mb-1">
+                            Size: {item.selectedSize}
+                          </p>
+                        )}
                         <p className="fw-bold mb-2">₹{item.price * item.qty}</p>
 
-                        {/* Qty Controls */}
                         <div className="d-flex align-items-center mb-2">
                           <button
                             className="btn btn-outline-secondary btn-sm"
-                            onClick={() => decreaseQty(item.id)}
+                            onClick={() =>
+                              decreaseQty(item.id, item.selectedSize)
+                            }
                           >
                             -
                           </button>
                           <span className="mx-2 fw-bold">{item.qty}</span>
                           <button
                             className="btn btn-outline-secondary btn-sm"
-                            onClick={() => increaseQty(item.id)}
+                            onClick={() =>
+                              increaseQty(item.id, item.selectedSize)
+                            }
                           >
                             +
                           </button>
                         </div>
 
-                        {/* Remove & Wishlist Buttons */}
                         <div className="mt-auto d-flex gap-2">
                           <button
                             className="btn btn-outline-danger btn-sm"
@@ -108,11 +108,12 @@ const Cart = () => {
                               fontSize: "14px",
                               padding: "6px 12px",
                             }}
-                            onClick={() => removeFromCart(item.id)}
+                            onClick={() =>
+                              removeFromCart(item.id, item.selectedSize)
+                            }
                           >
                             Remove
                           </button>
-
                           <button
                             className="btn btn-outline-primary btn-sm"
                             style={{
@@ -133,7 +134,6 @@ const Cart = () => {
               ))}
             </div>
 
-            {/* Price Details */}
             <div className="col-lg-4">
               <div className="card shadow-sm p-3">
                 <h5 className="mb-3">Price Details</h5>
@@ -166,7 +166,6 @@ const Cart = () => {
         )}
       </div>
 
-      {/* Toast Notifications */}
       <ToastContainer position="bottom-right" autoClose={2000} />
     </>
   );

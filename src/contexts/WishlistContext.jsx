@@ -16,9 +16,12 @@ export const WishlistProvider = ({ children }) => {
 
   const addToWishlist = (item) => {
     setWishlistItems((prev) => {
-      // prevent duplicates
-      if (prev.find((p) => p.id === item.id)) return prev;
-      return [...prev, item];
+      // ensure product has a unique id
+      const uniqueId = item.id || item._id || crypto.randomUUID();
+
+      if (prev.find((p) => p.id === uniqueId)) return prev;
+
+      return [...prev, { ...item, id: uniqueId }];
     });
   };
 

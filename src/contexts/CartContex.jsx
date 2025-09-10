@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect } from "react";
+
 export const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
@@ -11,40 +12,54 @@ export const CartProvider = ({ children }) => {
     localStorage.setItem("cartItems", JSON.stringify(cartItems));
   }, [cartItems]);
 
-  const addToCart = (item) => {
-    setCartItems((prev) => {
-      const existing = prev.find((i) => i.id === item.id);
-      if (existing) {
-        return prev.map((i) =>
-          i.id === item.id ? { ...i, qty: i.qty + 1 } : i
-        );
+  // Add to cart
+  const addToCart = (product) => {
+    setCartItems((prevCart) => {
+      const existingIndex = prevCart.findIndex(
+        (item) =>
+          item.id === product.id && item.selectedSize === product.selectedSize
+      );
+
+      if (existingIndex !== -1) {
+        const updatedCart = [...prevCart];
+        updatedCart[existingIndex].qty += product.qty || 1;
+        return updatedCart;
+      } else {
+        return [...prevCart, { ...product, qty: product.qty || 1 }];
       }
-      // Ensure unique id if not present
-      const newItem = { ...item, qty: 1, id: item.id || Date.now() };
-      return [...prev, newItem];
     });
   };
 
-  const removeFromCart = (id) => {
-    setCartItems((prev) => prev.filter((i) => i.id !== id));
-  };
-
-  const increaseQty = (id) => {
+  // Remove from cart
+  const removeFromCart = (id, selectedSize) => {
     setCartItems((prev) =>
-      prev.map((i) => (i.id === id ? { ...i, qty: i.qty + 1 } : i))
+      prev.filter((i) => !(i.id === id && i.selectedSize === selectedSize))
     );
   };
 
-  const decreaseQty = (id) => {
+  // Increase quantity
+  const increaseQty = (id, selectedSize) => {
     setCartItems((prev) =>
-      prev.map((i) => (i.id === id ? { ...i, qty: Math.max(i.qty - 1, 1) } : i))
+      prev.map((i) =>
+        i.id === id && i.selectedSize === selectedSize
+          ? { ...i, qty: i.qty + 1 }
+          : i
+      )
     );
   };
 
-  const clearCart = () => {
-    setCartItems([]);
-    localStorage.setItem("cartItems", JSON.stringify([]));
+  // Decrease quantity
+  const decreaseQty = (id, selectedSize) => {
+    setCartItems((prev) =>
+      prev.map((i) =>
+        i.id === id && i.selectedSize === selectedSize
+          ? { ...i, qty: Math.max(i.qty - 1, 1) }
+          : i
+      )
+    );
   };
+
+  const clearCart = () => setCartItems([]);
 
   return (
     <CartContext.Provider

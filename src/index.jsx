@@ -7,7 +7,7 @@ import Cart from "./pages/Cart";
 import Wishlist from "./pages/Wishlist";
 import { CartProvider } from "./contexts/CartContex";
 import { WishlistProvider } from "./contexts/WishlistContext";
-
+import ProductDetail from "./pages/ProductDetail";
 const rootElement = document.getElementById("root");
 const root = createRoot(rootElement);
 
@@ -20,6 +20,7 @@ root.render(
           <Route path="/cart" element={<Cart />} />
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/category/:categoryName" element={<CategoryCard />} />
+          <Route path="/product/:id" element={<ProductDetail />} />
         </Routes>
       </BrowserRouter>
     </WishlistProvider>

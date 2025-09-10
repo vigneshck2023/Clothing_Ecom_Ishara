@@ -17,7 +17,7 @@ const Navbar = ({ setSearchResults, setIsSearching, setSearchQuery }) => {
   const cartCount = cartItems.reduce((total, item) => total + item.qty, 0);
   const wishlistCount = wishlistItems.length;
 
-  // Handle search input
+  // 🔎 Handle search input
   const handleSearch = async (e) => {
     const value = e.target.value;
     setQuery(value);
@@ -42,7 +42,7 @@ const Navbar = ({ setSearchResults, setIsSearching, setSearchQuery }) => {
     }
   };
 
-  // Handle login/logout
+  // 👤 Handle login/logout
   const handleAuth = () => {
     if (isLoggedIn) {
       toast.success("👋 Logged out successfully!");
@@ -54,8 +54,8 @@ const Navbar = ({ setSearchResults, setIsSearching, setSearchQuery }) => {
 
   return (
     <>
-      <nav className="navbar navbar-expand-lg navbar-light bg-white border-bottom">
-        <div className="container-fluid px-4">
+      <nav className="navbar navbar-expand-lg navbar-light bg-white border-bottom px-3">
+        <div className="container-fluid">
           {/* Logo and Toggle Button */}
           <div className="d-flex align-items-center">
             <button
@@ -71,7 +71,7 @@ const Navbar = ({ setSearchResults, setIsSearching, setSearchQuery }) => {
             </button>
             <NavLink
               to="/"
-              className="navbar-brand m-0"
+              className="navbar-brand"
               style={{
                 fontFamily: "'Montserrat', serif",
                 fontWeight: "900",
@@ -120,14 +120,14 @@ const Navbar = ({ setSearchResults, setIsSearching, setSearchQuery }) => {
             {/* Wishlist, Cart & Auth */}
             <div className="d-flex align-items-center gap-3 ms-lg-auto">
               <NavLink to="/wishlist" className="position-relative">
-                <FaHeart className="fs-4 text-secondary" />
+                <FaHeart className="fs-5 text-secondary" />
                 {wishlistCount > 0 && (
                   <span className="badge-count">{wishlistCount}</span>
                 )}
               </NavLink>
 
               <NavLink to="/cart" className="position-relative">
-                <FaShoppingCart className="fs-4 text-secondary" />
+                <FaShoppingCart className="fs-5 text-secondary" />
                 {cartCount > 0 && (
                   <span className="badge-count">{cartCount}</span>
                 )}
@@ -135,8 +135,7 @@ const Navbar = ({ setSearchResults, setIsSearching, setSearchQuery }) => {
 
               <button
                 onClick={handleAuth}
-                className="btn btn-outline-dark btn-sm px-4 py-2"
-                style={{ fontSize: "1rem" }}
+                className="btn btn-outline-dark btn-sm px-3"
               >
                 {isLoggedIn ? "Logout" : "Login"}
               </button>
