@@ -44,7 +44,9 @@ function ProductDetail() {
       });
   }, [id]);
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <p className="text-center text-muted fw-semibold my-5 fs-5">
+  Loading...
+</p>
   if (!product) return <p>Product not found</p>;
 
   const handleAddToCart = () => {
