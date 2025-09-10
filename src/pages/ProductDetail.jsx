@@ -25,7 +25,9 @@ function ProductDetail() {
       .then((res) => res.json())
       .then((data) => {
         const products = data?.data?.products || [];
-        let found = products.find((p) => p.id === id || p._id === id || p.name === id);
+        let found = products.find(
+          (p) => p.id === id || p._id === id || p.name === id
+        );
         if (cartItem) found = cartItem; // override if editing cart item
         if (found) {
           setProduct(found);
@@ -37,7 +39,10 @@ function ProductDetail() {
       .catch(console.error);
   }, [id, cartItem]);
 
-  if (!product) return <p className="text-center text-muted fw-semibold my-5 fs-5">Loading...</p>;
+  if (!product)
+    return (
+      <p className="text-center text-muted fw-semibold my-5 fs-5">Loading...</p>
+    );
 
   const handleAddOrUpdateCart = () => {
     if (product.sizes?.length && !selectedSize) {
@@ -69,6 +74,7 @@ function ProductDetail() {
       <Navbar />
       <div className="container my-5">
         <div className="row">
+          {/* Left side: images */}
           <div className="col-md-6 d-flex">
             <div className="d-flex flex-column me-3" style={{ gap: "10px" }}>
               {product.images?.map((img, i) => (
@@ -81,7 +87,8 @@ function ProductDetail() {
                     width: "60px",
                     height: "55px",
                     objectFit: "cover",
-                    border: mainImage === img ? "2px solid #000" : "1px solid #ccc",
+                    border:
+                      mainImage === img ? "2px solid #000" : "1px solid #ccc",
                     borderRadius: "6px",
                     cursor: "pointer",
                     padding: "2px",
@@ -105,10 +112,32 @@ function ProductDetail() {
             </div>
           </div>
 
+          {/* Right side: product details */}
           <div className="col-md-6">
             <h3>{product.name}</h3>
             <h4 className="text-danger">₹{product.price}</h4>
 
+            <div className="d-flex flex-wrap my-3" style={{ gap: "20px" }}>
+              <div>🚚 Free Delivery</div>
+              <div>💳 Secure Payment</div>
+              <div>↩️ 10 Days Returnable</div>
+            </div>
+
+            {/* Description */}
+            <h5 className="mt-4">Description:</h5>
+            <ul>
+              {Array.isArray(product.description) ? (
+                product.description.map((line, i) => <li key={i}>{line}</li>)
+              ) : typeof product.description === "string" ? (
+                product.description
+                  .split("\n")
+                  .map((line, i) => <li key={i}>{line}</li>)
+              ) : (
+                <li>No description available.</li>
+              )}
+            </ul>
+
+            {/* Quantity */}
             <div className="my-3">
               <label className="me-2">Quantity:</label>
               <input
@@ -120,6 +149,7 @@ function ProductDetail() {
               />
             </div>
 
+            {/* Sizes */}
             {product.sizes && (
               <div className="my-3">
                 <label className="me-2">Size:</label>
@@ -137,11 +167,18 @@ function ProductDetail() {
               </div>
             )}
 
+            {/* Buttons */}
             <div className="my-4">
-              <button className="btn btn-primary me-3" onClick={handleAddOrUpdateCart}>
+              <button
+                className="btn btn-primary me-3"
+                onClick={handleAddOrUpdateCart}
+              >
                 {cartItem ? "Update Cart" : "Add to Cart"}
               </button>
-              <button className="btn btn-outline-danger" onClick={handleMoveToWishlist}>
+              <button
+                className="btn btn-outline-danger"
+                onClick={handleMoveToWishlist}
+              >
                 Move to Wishlist
               </button>
             </div>
