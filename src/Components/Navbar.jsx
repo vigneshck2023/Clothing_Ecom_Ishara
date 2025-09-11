@@ -1,6 +1,6 @@
-import React, { useState, useContext } from "react";
-import { NavLink } from "react-router-dom";
-import { FaHeart, FaShoppingCart, FaSearch } from "react-icons/fa";
+import React, { useState, useContext, useCallback } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { FaHeart, FaShoppingCart, FaSearch, FaUser } from "react-icons/fa";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -11,20 +11,17 @@ import "../styles.css";
 const Navbar = ({ setSearchResults, setIsSearching, setSearchQuery }) => {
   const [query, setQuery] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigate = useNavigate();
 
   const { cartItems } = useContext(CartContext);
   const { wishlistItems } = useContext(WishlistContext);
+  
   const cartCount = cartItems.reduce((total, item) => total + item.qty, 0);
   const wishlistCount = wishlistItems.length;
 
-  // 🔎 Handle search input
-  const handleSearch = async (e) => {
-    const value = e.target.value;
-    setQuery(value);
-
-    if (setSearchQuery) setSearchQuery(value);
-
-    if (!value.trim()) {
+  // Debounced search handler
+  const handleSearch = useCallback(async (searchValue) => {
+    if (!searchValue.trim()) {
       setSearchResults?.([]);
       setIsSearching?.(false);
       return;
@@ -32,29 +29,57 @@ const Navbar = ({ setSearchResults, setIsSearching, setSearchQuery }) => {
 
     try {
       const res = await fetch(
-        `https://project-ishara.vercel.app/api/products?search=${value}`
+        `https://project-ishara.vercel.app/api/products?search=${encodeURIComponent(searchValue)}`
       );
       const data = await res.json();
-      setSearchResults?.(data.data.products || []);
+      setSearchResults?.(data.data?.products || []);
       setIsSearching?.(true);
     } catch (err) {
       console.error("Search error:", err);
+      toast.error("Failed to search products");
     }
+  }, [setSearchResults, setIsSearching]);
+
+  // Handle search input with debounce
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setQuery(value);
+    if (setSearchQuery) setSearchQuery(value);
+    
+    // Simple debounce implementation
+    clearTimeout(window.searchTimeout);
+    window.searchTimeout = setTimeout(() => handleSearch(value), 300);
   };
 
-  // 👤 Handle login/logout
+  // Handle search form submission
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    handleSearch(query);
+  };
+
+  // Handle login/logout
   const handleAuth = () => {
     if (isLoggedIn) {
       toast.success("👋 Logged out successfully!");
+      setIsLoggedIn(false);
     } else {
-      toast.success("🎉 Logged in successfully!");
+      // Redirect to login page or show login modal
+      navigate("/login");
     }
-    setIsLoggedIn((prev) => !prev);
+  };
+
+  // Clear search and navigate home
+  const handleLogoClick = () => {
+    setQuery("");
+    setSearchResults?.([]);
+    setIsSearching?.(false);
+    setSearchQuery?.("");
+    navigate("/");
   };
 
   return (
     <>
-      <nav className="navbar navbar-expand-lg navbar-light bg-white border-bottom px-3">
+      <nav className="navbar navbar-expand-lg navbar-light bg-white border-bottom px-3 fixed-top">
         <div className="container">
           {/* Logo and Toggle Button */}
           <div className="d-flex align-items-center">
@@ -69,8 +94,7 @@ const Navbar = ({ setSearchResults, setIsSearching, setSearchQuery }) => {
             >
               <span className="navbar-toggler-icon"></span>
             </button>
-            <NavLink
-              to="/"
+            <div
               className="navbar-brand"
               style={{
                 fontFamily: "'Montserrat', serif",
@@ -84,21 +108,19 @@ const Navbar = ({ setSearchResults, setIsSearching, setSearchQuery }) => {
                 cursor: "pointer",
                 textTransform: "uppercase",
               }}
-              onClick={() => {
-                setQuery("");
-                setSearchResults?.([]);
-                setIsSearching?.(false);
-                setSearchQuery?.("");
-              }}
+              onClick={handleLogoClick}
             >
               Ishara
-            </NavLink>
+            </div>
           </div>
 
           {/* Search and Menu Items */}
           <div className="collapse navbar-collapse" id="navbarContent">
             {/* Search Bar */}
-            <div className="mx-auto my-3 my-lg-0 w-100 d-flex justify-content-center">
+            <form 
+              className="mx-auto my-3 my-lg-0 w-100 d-flex justify-content-center"
+              onSubmit={handleSearchSubmit}
+            >
               <div
                 className="input-group"
                 style={{ maxWidth: "500px", width: "100%" }}
@@ -111,22 +133,37 @@ const Navbar = ({ setSearchResults, setIsSearching, setSearchQuery }) => {
                   type="search"
                   placeholder="Search products..."
                   value={query}
-                  onChange={handleSearch}
+                  onChange={handleSearchChange}
                   aria-label="Search products"
                 />
+                <button 
+                  type="submit" 
+                  className="btn btn-outline-dark d-none d-md-block"
+                  disabled={!query.trim()}
+                >
+                  Search
+                </button>
               </div>
-            </div>
+            </form>
 
             {/* Wishlist, Cart & Auth */}
             <div className="d-flex align-items-center gap-3 ms-lg-auto">
-              <NavLink to="/wishlist" className="position-relative">
+              <NavLink 
+                to="/wishlist" 
+                className="position-relative text-decoration-none"
+                title="Wishlist"
+              >
                 <FaHeart className="fs-5 text-secondary" />
                 {wishlistCount > 0 && (
                   <span className="badge-count">{wishlistCount}</span>
                 )}
               </NavLink>
 
-              <NavLink to="/cart" className="position-relative">
+              <NavLink 
+                to="/cart" 
+                className="position-relative text-decoration-none"
+                title="Cart"
+              >
                 <FaShoppingCart className="fs-5 text-secondary" />
                 {cartCount > 0 && (
                   <span className="badge-count">{cartCount}</span>
@@ -135,17 +172,28 @@ const Navbar = ({ setSearchResults, setIsSearching, setSearchQuery }) => {
 
               <button
                 onClick={handleAuth}
-                className="btn btn-outline-dark btn-sm px-3"
+                className="btn btn-outline-dark btn-sm px-3 d-flex align-items-center gap-2"
+                title={isLoggedIn ? "Logout" : "Login"}
               >
-                {isLoggedIn ? "Logout" : "Login"}
+                <FaUser className="fs-6" />
+                <span className="d-none d-md-inline">
+                  {isLoggedIn ? "Logout" : "Login"}
+                </span>
               </button>
             </div>
           </div>
         </div>
       </nav>
 
+      {/* Add padding to the top of the page content to account for fixed navbar */}
+      <div style={{ paddingTop: '80px' }}></div>
+
       {/* Toast Notifications */}
-      <ToastContainer position="bottom-right" autoClose={1500} />
+      <ToastContainer 
+        position="bottom-right" 
+        autoClose={1500} 
+        pauseOnHover={false}
+      />
     </>
   );
 };
