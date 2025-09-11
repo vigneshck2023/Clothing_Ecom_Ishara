@@ -14,10 +14,9 @@ function CategoryCard() {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Filter states
-  const [priceRange, setPriceRange] = useState([0, 5000]);
-  const [selectedCategories, setSelectedCategories] = useState([]);
-  const [selectedRating, setSelectedRating] = useState(null);
-  const [sortBy, setSortBy] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [priceRange, setPriceRange] = useState(5000); // default slider max
+  const [sortOrder, setSortOrder] = useState("");
 
   useEffect(() => {
     if (!categoryName) return;
@@ -43,36 +42,27 @@ function CategoryCard() {
       });
   }, [categoryName]);
 
-  // Filtered Results
+  // Filter + Search
   let filteredProducts = isSearching
     ? searchResults.filter((product) =>
         product.name.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : [...products];
 
-  // Apply Price Filter
-  filteredProducts = filteredProducts.filter(
-    (p) => p.price >= priceRange[0] && p.price <= priceRange[1]
-  );
+  // Apply Price Range (0 - sliderValue)
+  filteredProducts = filteredProducts.filter((p) => p.price <= priceRange);
 
-  // Apply Category Filter
-  if (selectedCategories.length > 0) {
-    filteredProducts = filteredProducts.filter((p) =>
-      selectedCategories.includes(p.category)
-    );
-  }
-
-  // Apply Rating Filter
-  if (selectedRating) {
+  // Apply Category
+  if (selectedCategory) {
     filteredProducts = filteredProducts.filter(
-      (p) => p.rating >= selectedRating
+      (p) => p.category === selectedCategory
     );
   }
 
-  // Apply Sorting
-  if (sortBy === "lowToHigh") {
+  // Apply Sort
+  if (sortOrder === "lowToHigh") {
     filteredProducts.sort((a, b) => a.price - b.price);
-  } else if (sortBy === "highToLow") {
+  } else if (sortOrder === "highToLow") {
     filteredProducts.sort((a, b) => b.price - a.price);
   }
 
@@ -88,90 +78,67 @@ function CategoryCard() {
       <div className="container mt-4">
         <div className="row">
           {/* Sidebar Filters */}
-          <div className="col-md-3">
-            <h5 className="fw-bold">Filters</h5>
-            <button
-              className="btn btn-sm btn-link text-danger mb-3"
-              onClick={() => {
-                setPriceRange([0, 5000]);
-                setSelectedCategories([]);
-                setSelectedRating(null);
-                setSortBy("");
-              }}
-            >
-              Clear
-            </button>
+          <div className="col-md-3 mb-4">
+            <div className="card shadow-sm p-3">
+              <h5 className="fw-bold mb-3">Filters</h5>
 
-            {/* Price Filter */}
-            <div className="mb-4">
-              <h6>Price</h6>
+              {/* Category */}
+              <label className="form-label fw-semibold">Category</label>
+              <select
+                className="form-select mb-3"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+              >
+                <option value="">All</option>
+                <option value="Men">Men</option>
+                <option value="Women">Women</option>
+                <option value="Kids">Kids</option>
+                <option value="Accessories">Accessories</option>
+              </select>
+
+              {/* Price Range */}
+              <label className="form-label fw-semibold">Price Range</label>
               <input
                 type="range"
                 className="form-range"
                 min="0"
                 max="5000"
                 step="100"
-                value={priceRange[1]}
-                onChange={(e) => setPriceRange([0, parseInt(e.target.value)])}
+                value={priceRange}
+                onChange={(e) => setPriceRange(Number(e.target.value))}
               />
-              <p>
-                ₹{priceRange[0]} - ₹{priceRange[1]}
-              </p>
-            </div>
-
-            {/* Category Filter */}
-<div className="mb-4">
-  <h6>Category</h6>
-  {["Men", "Women", "Kids", "Accessories"].map((cat) => (
-    <div className="form-check" key={cat}>
-      <input
-        className="form-check-input"
-        type="checkbox"
-        value={cat}
-        checked={selectedCategories.includes(cat)}
-        onChange={(e) => {
-          if (e.target.checked) {
-            setSelectedCategories([...selectedCategories, cat]);
-          } else {
-            setSelectedCategories(
-              selectedCategories.filter((c) => c !== cat)
-            );
-          }
-        }}
-      />
-      <label className="form-check-label">{cat}</label>
-    </div>
-  ))}
-</div>
-
-
-            {/* Sort By */}
-            <div className="mb-4">
-              <h6>Sort by</h6>
-              <div className="form-check">
-                <input
-                  className="form-check-input"
-                  type="radio"
-                  name="sort"
-                  checked={sortBy === "lowToHigh"}
-                  onChange={() => setSortBy("lowToHigh")}
-                />
-                <label className="form-check-label">Price - Low to High</label>
+              <div className="d-flex justify-content-between mb-3">
+                <span>₹0</span>
+                <span>₹{priceRange}</span>
               </div>
-              <div className="form-check">
-                <input
-                  className="form-check-input"
-                  type="radio"
-                  name="sort"
-                  checked={sortBy === "highToLow"}
-                  onChange={() => setSortBy("highToLow")}
-                />
-                <label className="form-check-label">Price - High to Low</label>
-              </div>
+
+              {/* Sort */}
+              <label className="form-label fw-semibold">Sort By</label>
+              <select
+                className="form-select mb-3"
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value)}
+              >
+                <option value="">Default</option>
+                <option value="lowToHigh">Price: Low to High</option>
+                <option value="highToLow">Price: High to Low</option>
+              </select>
+
+              {/* Reset */}
+              <button
+                className="btn btn-secondary w-100"
+                onClick={() => {
+                  setSelectedCategory("");
+                  setPriceRange(5000);
+                  setSortOrder("");
+                }}
+              >
+                Reset Filters
+              </button>
             </div>
           </div>
 
-          {/* Products Grid */}
+          {/* Products */}
           <div className="col-md-9">
             <h2 className="mb-3">
               {isSearching

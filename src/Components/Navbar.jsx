@@ -15,38 +15,42 @@ const Navbar = ({ setSearchResults, setIsSearching, setSearchQuery }) => {
 
   const { cartItems } = useContext(CartContext);
   const { wishlistItems } = useContext(WishlistContext);
-  
+
   const cartCount = cartItems.reduce((total, item) => total + item.qty, 0);
   const wishlistCount = wishlistItems.length;
 
   // Debounced search handler
-  const handleSearch = useCallback(async (searchValue) => {
-    if (!searchValue.trim()) {
-      setSearchResults?.([]);
-      setIsSearching?.(false);
-      return;
-    }
+  const handleSearch = useCallback(
+    async (searchValue) => {
+      if (!searchValue.trim()) {
+        setSearchResults?.([]);
+        setIsSearching?.(false);
+        return;
+      }
 
-    try {
-      const res = await fetch(
-        `https://project-ishara.vercel.app/api/products?search=${encodeURIComponent(searchValue)}`
-      );
-      const data = await res.json();
-      setSearchResults?.(data.data?.products || []);
-      setIsSearching?.(true);
-    } catch (err) {
-      console.error("Search error:", err);
-      toast.error("Failed to search products");
-    }
-  }, [setSearchResults, setIsSearching]);
+      try {
+        const res = await fetch(
+          `https://project-ishara.vercel.app/api/products?search=${encodeURIComponent(
+            searchValue
+          )}`
+        );
+        const data = await res.json();
+        setSearchResults?.(data.data?.products || []);
+        setIsSearching?.(true);
+      } catch (err) {
+        console.error("Search error:", err);
+        toast.error("❌ Failed to search products");
+      }
+    },
+    [setSearchResults, setIsSearching]
+  );
 
   // Handle search input with debounce
   const handleSearchChange = (e) => {
     const value = e.target.value;
     setQuery(value);
     if (setSearchQuery) setSearchQuery(value);
-    
-    // Simple debounce implementation
+
     clearTimeout(window.searchTimeout);
     window.searchTimeout = setTimeout(() => handleSearch(value), 300);
   };
@@ -57,14 +61,15 @@ const Navbar = ({ setSearchResults, setIsSearching, setSearchQuery }) => {
     handleSearch(query);
   };
 
-  // Handle login/logout
+  // Handle login/logout toggle
   const handleAuth = () => {
     if (isLoggedIn) {
-      toast.success("👋 Logged out successfully!");
       setIsLoggedIn(false);
+      toast.info("👋 Logged out successfully!");
     } else {
-      // Redirect to login page or show login modal
-      navigate("/login");
+      setIsLoggedIn(true);
+      toast.success("✅ Logged in successfully!");
+      // navigate("/dashboard"); // optional redirect after login
     }
   };
 
@@ -117,7 +122,7 @@ const Navbar = ({ setSearchResults, setIsSearching, setSearchQuery }) => {
           {/* Search and Menu Items */}
           <div className="collapse navbar-collapse" id="navbarContent">
             {/* Search Bar */}
-            <form 
+            <form
               className="mx-auto my-3 my-lg-0 w-100 d-flex justify-content-center"
               onSubmit={handleSearchSubmit}
             >
@@ -136,8 +141,8 @@ const Navbar = ({ setSearchResults, setIsSearching, setSearchQuery }) => {
                   onChange={handleSearchChange}
                   aria-label="Search products"
                 />
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className="btn btn-outline-dark d-none d-md-block"
                   disabled={!query.trim()}
                 >
@@ -148,8 +153,8 @@ const Navbar = ({ setSearchResults, setIsSearching, setSearchQuery }) => {
 
             {/* Wishlist, Cart & Auth */}
             <div className="d-flex align-items-center gap-3 ms-lg-auto">
-              <NavLink 
-                to="/wishlist" 
+              <NavLink
+                to="/wishlist"
                 className="position-relative text-decoration-none"
                 title="Wishlist"
               >
@@ -159,8 +164,8 @@ const Navbar = ({ setSearchResults, setIsSearching, setSearchQuery }) => {
                 )}
               </NavLink>
 
-              <NavLink 
-                to="/cart" 
+              <NavLink
+                to="/cart"
                 className="position-relative text-decoration-none"
                 title="Cart"
               >
@@ -185,13 +190,13 @@ const Navbar = ({ setSearchResults, setIsSearching, setSearchQuery }) => {
         </div>
       </nav>
 
-      {/* Add padding to the top of the page content to account for fixed navbar */}
-      <div style={{ paddingTop: '80px' }}></div>
+      {/* Padding for fixed navbar */}
+      <div style={{ paddingTop: "80px" }}></div>
 
       {/* Toast Notifications */}
-      <ToastContainer 
-        position="bottom-right" 
-        autoClose={1500} 
+      <ToastContainer
+        position="bottom-right"
+        autoClose={1500}
         pauseOnHover={false}
       />
     </>
