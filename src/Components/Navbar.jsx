@@ -4,7 +4,7 @@ import { FaHeart, FaShoppingCart, FaSearch } from "react-icons/fa";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-import { CartContext } from "../contexts/CartContex";
+import { CartContext } from "../contexts/CartContext";
 import { WishlistContext } from "../contexts/WishlistContext";
 import "../styles.css";
 

@@ -1,67 +1,125 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { CartContext } from "../contexts/CartContex";
+import { CartContext } from "../contexts/CartContext";
 import { WishlistContext } from "../contexts/WishlistContext";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-function ProductCard({ product }) {
-  const { addToCart } = useContext(CartContext);
+function ProductCard({ product, onAddToCartCallback }) {
+  const { addToCart, cartItems } = useContext(CartContext);
   const { wishlistItems, addToWishlist, removeFromWishlist } =
     useContext(WishlistContext);
 
   const [showSizeModal, setShowSizeModal] = useState(false);
   const [selectedSize, setSelectedSize] = useState("");
+  const [addedToCart, setAddedToCart] = useState(false);
 
+  // Normalize product ID
   const productId = product.id || product._id || product.name;
+
+  // Check wishlist
   const isInWishlist = wishlistItems.some((item) => item.id === productId);
 
+  // Check if already in cart (to disable button)
+  useEffect(() => {
+    const inCart = cartItems.some(
+      (item) =>
+        item.id === productId &&
+        (item.selectedSize || "Free Size") ===
+          (product.sizes?.[0] || "Free Size")
+    );
+    setAddedToCart(inCart);
+  }, [cartItems, productId, product.sizes]);
+
+  // Wishlist toggle - FIXED: Always prompt for size if needed
   const toggleWishlist = (e) => {
     e.stopPropagation();
-    if (isInWishlist) {
-      removeFromWishlist(productId);
-      toast.info("Removed from Wishlist ❤️", { autoClose: 1500 });
-    } else {
-      addToWishlist({ ...product, id: productId });
-      toast.success("Added to Wishlist ❤️", { autoClose: 1500 });
-    }
-  };
+    const productId = product.id || product._id || product.name;
 
-  const handleAddToCart = () => {
+    // If product has sizes and none selected → show modal for size selection
     if (product.sizes && product.sizes.length > 0 && !selectedSize) {
       setShowSizeModal(true);
       return;
     }
 
-    const sizeToUse =
-      selectedSize || (product.sizes?.[0] ? product.sizes[0] : "Free Size");
+    const sizeToUse = selectedSize || product.sizes?.[0] || "Free Size";
 
-    addToCart({ ...product, selectedSize: sizeToUse });
-    toast.success("Added to Cart 🛒", { autoClose: 1500 });
-    setSelectedSize("");
+    if (isInWishlist) {
+      removeFromWishlist(productId, sizeToUse);
+      toast.info("Removed from Wishlist ❤️", { autoClose: 1500 });
+    } else {
+      addToWishlist({ 
+        ...product, 
+        id: productId, 
+        selectedSize: sizeToUse 
+      });
+      toast.success("Added to Wishlist ❤️", { autoClose: 1500 });
+    }
   };
 
-  const confirmSizeSelection = () => {
+  // Add to cart handler
+  const handleAddToCart = () => {
+    // If product has sizes and none selected → show modal
+    if (product.sizes && product.sizes.length > 0 && !selectedSize) {
+      setShowSizeModal(true);
+      return;
+    }
+
+    const sizeToUse = selectedSize || product.sizes?.[0] || "Free Size";
+
+    const productToAdd = {
+      ...product,
+      id: productId,
+      selectedSize: sizeToUse,
+      qty: 1,
+    };
+
+    addToCart(productToAdd);
+    toast.success("Added to Cart 🛒", { autoClose: 1500 });
+    setAddedToCart(true);
+    setSelectedSize("");
+    setShowSizeModal(false);
+
+    // Call parent callback to remove product from listing if provided
+    if (onAddToCartCallback) onAddToCartCallback(productId, sizeToUse);
+  };
+
+  // Confirm size selection in modal for BOTH wishlist and cart
+  const confirmSizeSelection = (isForWishlist = false) => {
     if (!selectedSize) {
       alert("⚠️ Please select a size.");
       return;
     }
-    addToCart({ ...product, selectedSize });
-    toast.success("Added to Cart 🛒", { autoClose: 1500 });
-    setSelectedSize("");
+
+    if (isForWishlist) {
+      const sizeToUse = selectedSize;
+      const productId = product.id || product._id || product.name;
+
+      if (isInWishlist) {
+        removeFromWishlist(productId, sizeToUse);
+        toast.info("Removed from Wishlist ❤️", { autoClose: 1500 });
+      } else {
+        addToWishlist({ 
+          ...product, 
+          id: productId, 
+          selectedSize: sizeToUse 
+        });
+        toast.success("Added to Wishlist ❤️", { autoClose: 1500 });
+      }
+    } else {
+      handleAddToCart();
+    }
+
     setShowSizeModal(false);
+    setSelectedSize("");
   };
 
   return (
     <>
       <div
         className="card h-100 shadow-sm category-card position-relative"
-        style={{
-          width: "100%",
-          maxWidth: "310px",
-          margin: "auto",
-        }}
+        style={{ width: "100%", maxWidth: "310px", margin: "auto" }}
       >
         {/* Wishlist Heart Icon */}
         <div
@@ -81,20 +139,17 @@ function ProductCard({ product }) {
           )}
         </div>
 
-        {/* Image section → opens Product Detail */}
+        {/* Image & Product Link */}
         <Link to={`/product/${productId}`}>
           <img
             src={product.image || product.images?.[0] || "/placeholder.png"}
             alt={product.name}
             className="card-img-top"
-            style={{
-              objectFit: "cover",
-              height: "400px",
-            }}
+            style={{ objectFit: "cover", height: "400px" }}
           />
         </Link>
 
-        {/* Card body */}
+        {/* Card Body */}
         <div className="card-body d-flex flex-column">
           <Link
             to={`/product/${productId}`}
@@ -107,8 +162,11 @@ function ProductCard({ product }) {
 
           <div className="mt-auto">
             <button
-              className="btn btn-outline-primary w-100"
+              className={`btn w-100 ${
+                addedToCart ? "btn-secondary" : "btn-outline-primary"
+              }`}
               onClick={handleAddToCart}
+              disabled={addedToCart}
               style={{
                 borderRadius: "35px",
                 fontWeight: "550",
@@ -116,13 +174,13 @@ function ProductCard({ product }) {
                 padding: "8px",
               }}
             >
-              Add to Cart
+              {addedToCart ? "Added to Cart" : "Add to Cart"}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Size Selection Modal */}
+      {/* Size Selection Modal - Updated for both wishlist and cart */}
       {showSizeModal && (
         <div
           className="modal fade show"
@@ -133,41 +191,37 @@ function ProductCard({ product }) {
               <h5>Select Size for {product.name}</h5>
 
               <div className="d-flex flex-wrap gap-2 my-3">
-                {product.sizes && product.sizes.length > 0
-                  ? product.sizes.map((size) => (
-                      <button
-                        key={size}
-                        className={`btn ${
-                          selectedSize === size
-                            ? "btn-primary"
-                            : "btn-outline-primary"
-                        }`}
-                        onClick={() => setSelectedSize(size)}
-                      >
-                        {size}
-                      </button>
-                    ))
-                  : ["Free Size"].map((size) => (
-                      <button
-                        key={size}
-                        className="btn btn-primary"
-                        onClick={() => setSelectedSize(size)}
-                      >
-                        {size}
-                      </button>
-                    ))}
+                {(product.sizes && product.sizes.length > 0
+                  ? product.sizes
+                  : ["Free Size"]
+                ).map((size) => (
+                  <button
+                    key={size}
+                    className={`btn ${
+                      selectedSize === size
+                        ? "btn-primary"
+                        : "btn-outline-primary"
+                    }`}
+                    onClick={() => setSelectedSize(size)}
+                  >
+                    {size}
+                  </button>
+                ))}
               </div>
 
               <div className="d-flex justify-content-end gap-2">
                 <button
                   className="btn btn-secondary"
-                  onClick={() => setShowSizeModal(false)}
+                  onClick={() => {
+                    setShowSizeModal(false);
+                    setSelectedSize("");
+                  }}
                 >
                   Cancel
                 </button>
                 <button
                   className="btn btn-success"
-                  onClick={confirmSizeSelection}
+                  onClick={() => confirmSizeSelection(true)} // true = for wishlist
                 >
                   Confirm
                 </button>

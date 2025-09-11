@@ -1,6 +1,6 @@
 import React, { useContext, useState } from "react";
 import Navbar from "../Components/Navbar";
-import { CartContext } from "../contexts/CartContex";
+import { CartContext } from "../contexts/CartContext";
 import { WishlistContext } from "../contexts/WishlistContext";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -9,34 +9,58 @@ import { useNavigate } from "react-router-dom";
 const Cart = () => {
   const { cartItems, removeFromCart, increaseQty, decreaseQty, clearCart } =
     useContext(CartContext);
-  const { addToWishlist } = useContext(WishlistContext);
+  const { addToWishlist, wishlistItems, removeFromWishlist } =
+    useContext(WishlistContext);
   const navigate = useNavigate();
 
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedSize, setSelectedSize] = useState("");
 
+  // Move cart item to wishlist
   const moveToWishlist = (item) => {
-    if (!item.selectedSize && item.sizes?.length) {
-      setSelectedItem(item); // prompt size selection if missing
+    const sizeToUse = item.selectedSize || selectedSize;
+
+    // If item has sizes and none selected → show modal
+    if (!sizeToUse && item.sizes?.length) {
+      setSelectedItem(item);
       return;
     }
-    addToWishlist({ ...item, qty: undefined });
-    removeFromCart(item.id, item.selectedSize);
+
+    const productId = item.id || item._id || item.name;
+
+    // Prevent duplicates in wishlist
+    const existing = wishlistItems.find(
+      (i) => i.id === productId && i.selectedSize === sizeToUse
+    );
+    if (!existing) {
+      addToWishlist({ ...item, selectedSize: sizeToUse, qty: undefined });
+      toast.success("Moved to Wishlist ❤️");
+    }
+
+    removeFromCart(item.id, item.selectedSize || sizeToUse);
   };
 
+  // Confirm size for wishlist modal
   const confirmSizeForWishlist = () => {
     if (!selectedSize) {
       alert("⚠️ Please select a size.");
       return;
     }
-    addToWishlist({ ...selectedItem, selectedSize, qty: undefined });
-    removeFromCart(selectedItem.id, selectedItem.selectedSize);
+
+    const productId = selectedItem.id || selectedItem._id || selectedItem.name;
+    const existing = wishlistItems.find(
+      (i) => i.id === productId && i.selectedSize === selectedSize
+    );
+
+    if (!existing) {
+      addToWishlist({ ...selectedItem, selectedSize, qty: undefined });
+      toast.success("Moved to Wishlist ❤️");
+    }
+
+    removeFromCart(selectedItem.id, selectedItem.selectedSize || selectedSize);
+
     setSelectedItem(null);
     setSelectedSize("");
-  };
-
-  const goToProductDetail = (item) => {
-    navigate(`/product/${item.id}`, { state: { cartItem: item } });
   };
 
   const totalMRP = cartItems.reduce(
@@ -72,7 +96,6 @@ const Cart = () => {
                 <div
                   key={index}
                   className="col-12 mb-4"
-                  onClick={() => goToProductDetail(item)}
                   style={{ cursor: "pointer" }}
                 >
                   <div className="card shadow-sm p-2">
@@ -126,12 +149,6 @@ const Cart = () => {
                         <div className="mt-auto d-flex gap-2">
                           <button
                             className="btn btn-outline-danger btn-sm"
-                            style={{
-                              borderRadius: "25px",
-                              fontWeight: "500",
-                              fontSize: "14px",
-                              padding: "6px 12px",
-                            }}
                             onClick={(e) => {
                               e.stopPropagation();
                               removeFromCart(item.id, item.selectedSize);
@@ -141,12 +158,6 @@ const Cart = () => {
                           </button>
                           <button
                             className="btn btn-outline-primary btn-sm"
-                            style={{
-                              borderRadius: "25px",
-                              fontWeight: "500",
-                              fontSize: "14px",
-                              padding: "6px 12px",
-                            }}
                             onClick={(e) => {
                               e.stopPropagation();
                               moveToWishlist(item);
@@ -178,10 +189,7 @@ const Cart = () => {
                   <span>Total Amount</span>
                   <span>₹{finalPrice}</span>
                 </div>
-                <button
-                  className="btn btn-primary w-100"
-                  onClick={handlePlaceOrder}
-                >
+                <button className="btn btn-primary w-100" onClick={handlePlaceOrder}>
                   Place Order
                 </button>
               </div>
@@ -208,9 +216,7 @@ const Cart = () => {
                   (size) => (
                     <button
                       key={size}
-                      className={`btn ${
-                        selectedSize === size ? "btn-primary" : "btn-outline-primary"
-                      }`}
+                      className={`btn ${selectedSize === size ? "btn-primary" : "btn-outline-primary"}`}
                       onClick={() => setSelectedSize(size)}
                     >
                       {size}
@@ -219,10 +225,7 @@ const Cart = () => {
                 )}
               </div>
               <div className="d-flex justify-content-end gap-2">
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => setSelectedItem(null)}
-                >
+                <button className="btn btn-secondary" onClick={() => setSelectedItem(null)}>
                   Cancel
                 </button>
                 <button className="btn btn-success" onClick={confirmSizeForWishlist}>

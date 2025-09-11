@@ -1,7 +1,8 @@
 import React, { useContext, useState } from "react";
 import Navbar from "../Components/Navbar";
 import { WishlistContext } from "../contexts/WishlistContext";
-import { CartContext } from "../contexts/CartContex";
+import { CartContext } from "../contexts/CartContext";
+import { toast } from "react-toastify";
 
 const Wishlist = () => {
   const { wishlistItems, removeFromWishlist } = useContext(WishlistContext);
@@ -11,31 +12,51 @@ const Wishlist = () => {
   const [selectedSize, setSelectedSize] = useState("");
 
   const moveToCart = (item) => {
-    // Only prompt for size if it's not already selected
-    if (!item.selectedSize) {
+    // If the item has a selectedSize, use it directly
+    if (item.selectedSize && item.selectedSize !== "Free Size") {
+      addToCart({ ...item, qty: 1 });
+      removeFromWishlist(item.id, item.selectedSize);
+      toast.success("Moved to Cart 🛒");
+      return;
+    }
+
+    // If no size is selected but product has sizes → show modal
+    if (item.sizes?.length && item.sizes[0] !== "Free Size" && !selectedSize) {
       setSelectedItem(item);
       return;
     }
-    addToCart({ ...item, selectedSize: item.selectedSize });
-    removeFromWishlist(item.id, item.selectedSize);
+
+    // For items without sizes or Free Size items
+    const sizeToUse = item.selectedSize || selectedSize || (item.sizes?.[0] || "Free Size");
+    addToCart({ ...item, selectedSize: sizeToUse, qty: 1 });
+    removeFromWishlist(item.id, sizeToUse);
+    toast.success("Moved to Cart 🛒");
   };
 
   const confirmSizeForCart = () => {
     if (!selectedSize) {
-      alert("⚠️ Please select a size before adding to cart.");
+      alert("⚠️ Please select a size.");
       return;
     }
-    addToCart({ ...selectedItem, selectedSize });
+    
+    addToCart({ ...selectedItem, selectedSize, qty: 1 });
     removeFromWishlist(selectedItem.id, selectedSize);
+
     setSelectedItem(null);
     setSelectedSize("");
+    toast.success("Moved to Cart 🛒");
+  };
+
+  const removeFromWishlistHandler = (item) => {
+    const sizeToUse = item.selectedSize || (item.sizes?.[0] || "Free Size");
+    removeFromWishlist(item.id, sizeToUse);
   };
 
   return (
     <>
       <Navbar />
       <div className="container my-4">
-        <h2 className="mb-4">Your Wishlist</h2>
+        <h2 className="mb-4 fw-bold">Your Wishlist</h2>
 
         {wishlistItems.length > 0 ? (
           <div className="row g-3">
@@ -43,7 +64,10 @@ const Wishlist = () => {
               <div key={index} className="col-12">
                 <div className="card shadow-sm p-2">
                   <div className="d-flex align-items-center">
-                    <div className="me-3" style={{ width: "120px", flexShrink: 0 }}>
+                    <div
+                      className="me-3"
+                      style={{ width: "120px", flexShrink: 0 }}
+                    >
                       <img
                         src={item.image || item.images?.[0] || "/placeholder.png"}
                         alt={item.name}
@@ -60,7 +84,7 @@ const Wishlist = () => {
 
                     <div className="flex-grow-1 d-flex flex-column">
                       <h6 className="mb-1">{item.name}</h6>
-                      {item.selectedSize && (
+                      {item.selectedSize && item.selectedSize !== "Free Size" && (
                         <p className="text-muted small mb-1">
                           Size: {item.selectedSize}
                         </p>
@@ -70,7 +94,7 @@ const Wishlist = () => {
                       <div className="mt-auto d-flex gap-2">
                         <button
                           className="btn btn-outline-danger btn-sm"
-                          onClick={() => removeFromWishlist(item.id, item.selectedSize)}
+                          onClick={() => removeFromWishlistHandler(item)}
                         >
                           Remove
                         </button>
@@ -95,7 +119,7 @@ const Wishlist = () => {
         )}
       </div>
 
-      {/* Size Selection Modal */}
+      {/* Size Selection Modal for items without size */}
       {selectedItem && (
         <div
           className="modal fade show"
@@ -106,27 +130,26 @@ const Wishlist = () => {
               <h5>Select Size for {selectedItem.name}</h5>
 
               <div className="d-flex flex-wrap gap-2 my-3">
-                {(selectedItem.sizes && selectedItem.sizes.length > 0
-                  ? selectedItem.sizes
-                  : ["Free Size"]
-                ).map((size) => (
-                  <button
-                    key={size}
-                    className={`btn ${
-                      selectedSize === size ? "btn-primary" : "btn-outline-primary"
-                    }`}
-                    onClick={() => setSelectedSize(size)}
-                  >
-                    {size}
-                  </button>
-                ))}
+                {(selectedItem.sizes?.length ? selectedItem.sizes : ["Free Size"]).map(
+                  (size) => (
+                    <button
+                      key={size}
+                      className={`btn ${
+                        selectedSize === size ? "btn-primary" : "btn-outline-primary"
+                      }`}
+                      onClick={() => setSelectedSize(size)}
+                    >
+                      {size}
+                    </button>
+                  )
+                )}
               </div>
 
               <div className="d-flex justify-content-end gap-2">
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => setSelectedItem(null)}
-                >
+                <button className="btn btn-secondary" onClick={() => {
+                  setSelectedItem(null);
+                  setSelectedSize("");
+                }}>
                   Cancel
                 </button>
                 <button className="btn btn-success" onClick={confirmSizeForCart}>

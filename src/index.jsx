@@ -5,7 +5,7 @@ import App from "./App";
 import CategoryCard from "./Components/CategoryCard";
 import Cart from "./pages/Cart";
 import Wishlist from "./pages/Wishlist";
-import { CartProvider } from "./contexts/CartContex";
+import { CartProvider } from "./contexts/CartContext";
 import { WishlistProvider } from "./contexts/WishlistContext";
 import ProductDetail from "./pages/ProductDetail";
 const rootElement = document.getElementById("root");

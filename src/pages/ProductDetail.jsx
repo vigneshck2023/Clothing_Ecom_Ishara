@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import Navbar from "../Components/Navbar";
-import { CartContext } from "../contexts/CartContex";
+import { CartContext } from "../contexts/CartContext";
 import { WishlistContext } from "../contexts/WishlistContext";
 import { toast } from "react-toastify";
 
@@ -11,14 +11,15 @@ function ProductDetail() {
   const navigate = useNavigate();
 
   const { addToCart, removeFromCart } = useContext(CartContext);
-  const { addToWishlist } = useContext(WishlistContext);
+  const { addToWishlist, wishlistItems, removeFromWishlist } =
+    useContext(WishlistContext);
 
   const [product, setProduct] = useState(null);
   const [mainImage, setMainImage] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState("");
 
-  const cartItem = location.state?.cartItem; // prefill if navigating from cart
+  const cartItem = location.state?.cartItem;
 
   useEffect(() => {
     fetch("https://project-ishara.vercel.app/api/products")
@@ -28,7 +29,7 @@ function ProductDetail() {
         let found = products.find(
           (p) => p.id === id || p._id === id || p.name === id
         );
-        if (cartItem) found = cartItem; // override if editing cart item
+        if (cartItem) found = cartItem;
         if (found) {
           setProduct(found);
           setMainImage(found.images?.[0] || "");
@@ -50,10 +51,18 @@ function ProductDetail() {
       return;
     }
 
-    // Remove old cart entry if editing
     if (cartItem) removeFromCart(cartItem.id, cartItem.selectedSize);
 
-    addToCart({ ...product, qty: quantity, selectedSize });
+    const productToAdd = { ...product, qty: quantity, selectedSize };
+    addToCart(productToAdd);
+
+    // Remove from wishlist if present
+    const productId = product.id || product._id || product.name;
+    const wishItem = wishlistItems.find(
+      (i) => i.id === productId && i.selectedSize === selectedSize
+    );
+    if (wishItem) removeFromWishlist(productId, selectedSize);
+
     toast.success(cartItem ? "Cart updated!" : "Added to cart!");
   };
 
@@ -63,8 +72,16 @@ function ProductDetail() {
       return;
     }
 
+    const productId = product.id || product._id || product.name;
+    const wishItem = wishlistItems.find(
+      (i) => i.id === productId && i.selectedSize === selectedSize
+    );
+    if (!wishItem) {
+      addToWishlist({ ...product, selectedSize, qty: undefined });
+    }
+
     if (cartItem) removeFromCart(cartItem.id, cartItem.selectedSize);
-    addToWishlist({ ...product, selectedSize, qty: undefined });
+
     toast.success("Moved to Wishlist!");
     navigate("/cart");
   };
@@ -87,8 +104,7 @@ function ProductDetail() {
                     width: "60px",
                     height: "55px",
                     objectFit: "cover",
-                    border:
-                      mainImage === img ? "2px solid #000" : "1px solid #ccc",
+                    border: mainImage === img ? "2px solid #000" : "1px solid #ccc",
                     borderRadius: "6px",
                     cursor: "pointer",
                     padding: "2px",
@@ -117,27 +133,21 @@ function ProductDetail() {
             <h3>{product.name}</h3>
             <h4 className="text-danger">₹{product.price}</h4>
 
+            <h5 className="mt-4">Description:</h5>
+            <ul style={{ textAlign: "justify" }}>
+              {Array.isArray(product.description)
+                ? product.description.map((line, i) => <li key={i}>{line}</li>)
+                : typeof product.description === "string"
+                ? product.description.split("\n").map((line, i) => <li key={i}>{line}</li>)
+                : <li>No description available.</li>}
+            </ul>
+
             <div className="d-flex flex-wrap my-3" style={{ gap: "20px" }}>
               <div>🚚 Free Delivery</div>
               <div>💳 Secure Payment</div>
               <div>↩️ 10 Days Returnable</div>
             </div>
 
-            {/* Description */}
-            <h5 className="mt-4">Description:</h5>
-            <ul>
-              {Array.isArray(product.description) ? (
-                product.description.map((line, i) => <li key={i}>{line}</li>)
-              ) : typeof product.description === "string" ? (
-                product.description
-                  .split("\n")
-                  .map((line, i) => <li key={i}>{line}</li>)
-              ) : (
-                <li>No description available.</li>
-              )}
-            </ul>
-
-            {/* Quantity */}
             <div className="my-3">
               <label className="me-2">Quantity:</label>
               <input
@@ -149,7 +159,6 @@ function ProductDetail() {
               />
             </div>
 
-            {/* Sizes */}
             {product.sizes && (
               <div className="my-3">
                 <label className="me-2">Size:</label>
@@ -167,7 +176,6 @@ function ProductDetail() {
               </div>
             )}
 
-            {/* Buttons */}
             <div className="my-4">
               <button
                 className="btn btn-primary me-3"

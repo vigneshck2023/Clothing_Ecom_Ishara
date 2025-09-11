@@ -14,25 +14,24 @@ export const WishlistProvider = ({ children }) => {
 
   const addToWishlist = (item) => {
     setWishlistItems((prev) => {
-      const uniqueId = item.id || item._id || crypto.randomUUID();
+      // Use stable ID: prefer item.id, fallback item._id, else generate UUID
+      const idToUse = item.id || item._id || crypto.randomUUID();
 
-      // check for same product + size
-      if (
-        prev.find(
-          (p) => p.id === uniqueId && p.selectedSize === item.selectedSize
-        )
-      )
-        return prev;
+      // Prevent duplicate of same product + size
+      const exists = prev.find(
+        (p) => p.id === idToUse && p.selectedSize === item.selectedSize
+      );
+      if (exists) return prev;
 
-      return [...prev, { ...item, id: uniqueId }];
+      return [...prev, { ...item, id: idToUse }];
     });
   };
 
   const removeFromWishlist = (id, selectedSize) => {
     setWishlistItems((prev) =>
-      selectedSize
-        ? prev.filter((i) => !(i.id === id && i.selectedSize === selectedSize))
-        : prev.filter((i) => i.id !== id)
+      prev.filter((item) =>
+        selectedSize ? !(item.id === id && item.selectedSize === selectedSize) : item.id !== id
+      )
     );
   };
 
