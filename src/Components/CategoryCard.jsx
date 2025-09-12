@@ -20,7 +20,7 @@ function CategoryCard() {
   const [priceRange, setPriceRange] = useState(5000);
   const [sortOrder, setSortOrder] = useState("");
 
-  // 🔹 Fetch all products once
+  // Fetch all products once
   useEffect(() => {
     fetch("https://project-ishara.vercel.app/api/products")
       .then((res) => {
@@ -37,7 +37,7 @@ function CategoryCard() {
       });
   }, []);
 
-  // 🔹 Handle category checkbox toggle
+  // Handle category checkbox toggle
   const handleCategoryChange = (category) => {
     setSelectedCategories((prev) =>
       prev.includes(category)
@@ -46,7 +46,7 @@ function CategoryCard() {
     );
   };
 
-  // 🔹 Filter + Search + Sort
+  // Filter + Search + Sort
   let filteredProducts = isSearching
     ? searchResults.filter((product) =>
         product.name.toLowerCase().includes(searchQuery.toLowerCase())

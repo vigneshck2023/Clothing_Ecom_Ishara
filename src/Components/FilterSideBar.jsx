@@ -1,4 +1,3 @@
-// src/Components/FiltersSidebar.js
 import React from "react";
 
 export default function FiltersSidebar({
