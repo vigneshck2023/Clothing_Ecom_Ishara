@@ -27,7 +27,7 @@ function ProductDetail() {
       .then((data) => {
         const products = data?.data?.products || [];
         let found = products.find(
-          (p) => p.id === id || p._id === id || p.name === id
+          (p) => p.id === id || p._id === id || p.name === id,
         );
         if (cartItem) found = cartItem;
         if (found) {
@@ -56,7 +56,7 @@ function ProductDetail() {
 
     const productId = product.id || product._id || product.name;
     const wishItem = wishlistItems.find(
-      (i) => i.id === productId && i.selectedSize === selectedSize
+      (i) => i.id === productId && i.selectedSize === selectedSize,
     );
     if (wishItem) removeFromWishlist(productId, selectedSize);
 
@@ -71,7 +71,7 @@ function ProductDetail() {
 
     const productId = product.id || product._id || product.name;
     const wishItem = wishlistItems.find(
-      (i) => i.id === productId && i.selectedSize === selectedSize
+      (i) => i.id === productId && i.selectedSize === selectedSize,
     );
     if (!wishItem) {
       addToWishlist({ ...product, selectedSize, qty: undefined });
@@ -88,51 +88,49 @@ function ProductDetail() {
       <Navbar />
       <div className="container my-5">
         <div className="row flex-column flex-md-row">
-{/* Left side: images */}
-<div className="col-12 col-md-6 d-flex flex-column flex-md-row">
-  {/* Thumbnails - no scroll */}
-  <div
-    className="d-flex flex-row flex-md-column mb-3 mb-md-0"
-    style={{ gap: "10px" }}
-  >
-    {product.images?.map((img, i) => (
-      <img
-        key={i}
-        src={img}
-        alt={`thumb-${i}`}
-        onClick={() => setMainImage(img)}
-        className={`border ${
-          mainImage === img ? "border-dark" : "border-secondary"
-        }`}
-        style={{
-          width: "70px",
-          height: "65px",
-          cursor: "pointer",
-          borderRadius: "6px",
-          objectFit: "cover",
-        }}
-      />
-    ))}
-  </div>
+          {/* Left side: images */}
+          <div className="col-12 col-md-6 d-flex flex-column flex-md-row">
+            {/* Thumbnails - no scroll */}
+            <div
+              className="d-flex flex-row flex-md-column mb-3 mb-md-0"
+              style={{ gap: "10px" }}
+            >
+              {product.images?.map((img, i) => (
+                <img
+                  key={i}
+                  src={img}
+                  alt={`thumb-${i}`}
+                  onClick={() => setMainImage(img)}
+                  className={`border ${
+                    mainImage === img ? "border-dark" : "border-secondary"
+                  }`}
+                  style={{
+                    width: "70px",
+                    height: "65px",
+                    cursor: "pointer",
+                    borderRadius: "6px",
+                    objectFit: "cover",
+                  }}
+                />
+              ))}
+            </div>
 
-  {/* Main image */}
-  <div className="flex-grow-1 d-flex justify-content-center align-items-center">
-    <img
-  src={mainImage}
-  alt="main"
-  className="img-fluid"
-  style={{
-    maxHeight: "500px",
-    width: "60%",
-    objectFit: "cover",
-    borderRadius: "0px",
-    border: "none",
-  }}
-/>
-  </div>
-</div>
-
-
+            {/* Main image */}
+            <div className="flex-grow-1 d-flex justify-content-center align-items-center">
+              <img
+                src={mainImage}
+                alt="main"
+                className="img-fluid"
+                style={{
+                  maxHeight: "500px",
+                  width: "60%",
+                  objectFit: "cover",
+                  borderRadius: "0px",
+                  border: "none",
+                }}
+              />
+            </div>
+          </div>
 
           {/* Right side: product details */}
           <div className="col-12 col-md-6 mt-4 mt-md-0">
@@ -141,13 +139,15 @@ function ProductDetail() {
 
             <h5 className="mt-4">Description:</h5>
             <ul style={{ textAlign: "justify" }}>
-              {Array.isArray(product.description)
-                ? product.description.map((line, i) => <li key={i}>{line}</li>)
-                : typeof product.description === "string"
-                ? product.description
-                    .split("\n")
-                    .map((line, i) => <li key={i}>{line}</li>)
-                : <li>No description available.</li>}
+              {Array.isArray(product.description) ? (
+                product.description.map((line, i) => <li key={i}>{line}</li>)
+              ) : typeof product.description === "string" ? (
+                product.description
+                  .split("\n")
+                  .map((line, i) => <li key={i}>{line}</li>)
+              ) : (
+                <li>No description available.</li>
+              )}
             </ul>
 
             <div className="d-flex flex-wrap my-3" style={{ gap: "20px" }}>
