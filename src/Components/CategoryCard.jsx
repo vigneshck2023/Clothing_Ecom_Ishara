@@ -77,7 +77,7 @@ function CategoryCard() {
 
       <div className="container mt-4">
         <div className="row">
-          {/* Sidebar Filters */}
+          {/* Card Filters */}
           <div className="col-md-3 mb-4">
             <div className="card shadow-sm p-3">
               <h5 className="fw-bold mb-3">Filters</h5>
