@@ -19,7 +19,6 @@ const Navbar = ({ setSearchResults, setIsSearching, setSearchQuery }) => {
   const cartCount = cartItems.reduce((total, item) => total + item.qty, 0);
   const wishlistCount = wishlistItems.length;
 
-  // Debounced search handler
   const handleSearch = useCallback(
     async (searchValue) => {
       if (!searchValue.trim()) {
@@ -39,7 +38,7 @@ const Navbar = ({ setSearchResults, setIsSearching, setSearchQuery }) => {
         setIsSearching?.(true);
       } catch (err) {
         console.error("Search error:", err);
-        toast.error("❌ Failed to search products");
+        toast.error("Failed to search products");
       }
     },
     [setSearchResults, setIsSearching]
@@ -65,11 +64,10 @@ const Navbar = ({ setSearchResults, setIsSearching, setSearchQuery }) => {
   const handleAuth = () => {
     if (isLoggedIn) {
       setIsLoggedIn(false);
-      toast.info("👋 Logged out successfully!");
+      toast.info("Logged out successfully!");
     } else {
       setIsLoggedIn(true);
-      toast.success("✅ Logged in successfully!");
-      // navigate("/dashboard"); // optional redirect after login
+      toast.success("Logged in successfully!");
     }
   };
 
@@ -84,7 +82,7 @@ const Navbar = ({ setSearchResults, setIsSearching, setSearchQuery }) => {
 
   return (
     <>
-      <nav className="navbar navbar-expand-lg navbar-light bg-white border-bottom px-3 fixed-top">
+      <nav className="navbar navbar-expand-lg navbar-light bg-white border-bottom px-3 fixed-top ">
         <div className="container">
           {/* Logo and Toggle Button */}
           <div className="d-flex align-items-center">

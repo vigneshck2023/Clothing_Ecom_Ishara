@@ -5,6 +5,7 @@ import { WishlistContext } from "../contexts/WishlistContext";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
+import AddressForm from "../Components/AddressForm";
 
 const Cart = () => {
   const { cartItems, removeFromCart, increaseQty, decreaseQty, clearCart } =
@@ -29,12 +30,13 @@ const Cart = () => {
     state: "",
     pincode: "",
   });
+  const [editIndex, setEditIndex] = useState(null);
 
   useEffect(() => {
     localStorage.setItem("addresses", JSON.stringify(addresses));
   }, [addresses]);
 
-  const addAddress = () => {
+  const addOrUpdateAddress = () => {
     if (
       !newAddress.name ||
       !newAddress.phone ||
@@ -43,10 +45,20 @@ const Cart = () => {
       !newAddress.state ||
       !newAddress.pincode
     ) {
-      toast.error("⚠️ Please fill all fields");
+      toast.error("Please fill all fields");
       return;
     }
-    const updated = [...addresses, newAddress];
+
+    let updated;
+    if (editIndex !== null) {
+      updated = [...addresses];
+      updated[editIndex] = newAddress;
+      toast.success("Address updated!", {autoClose: 2000});
+    } else {
+      updated = [...addresses, newAddress];
+      toast.success("Address added!", {autoClose: 2000});
+    }
+
     setAddresses(updated);
     setNewAddress({
       name: "",
@@ -56,7 +68,12 @@ const Cart = () => {
       state: "",
       pincode: "",
     });
-    toast.success("✅ Address added!");
+    setEditIndex(null);
+  };
+
+  const editAddress = (index) => {
+    setNewAddress(addresses[index]);
+    setEditIndex(index);
   };
 
   const removeAddress = (index) => {
@@ -139,6 +156,7 @@ const Cart = () => {
         {cartItems.length > 0 ? (
           <div className="row g-3 gx-4">
             <div className="col-lg-8">
+              {/* ---------------- Cart Items ---------------- */}
               {cartItems.map((item, index) => (
                 <div key={index} className="col-12 mb-4">
                   <div className="card shadow-sm p-2">
@@ -202,95 +220,61 @@ const Cart = () => {
 
               {/* ---------------- Address Section ---------------- */}
               <div className="card shadow-sm p-3 mt-4">
-                <h5 className="mb-3">Delivery Addresses</h5>
+  <h5 className="mb-3">Delivery Addresses</h5>
 
-                {addresses.length > 0 ? (
-                  <div className="mb-3">
-                    {addresses.map((addr, index) => (
-                      <div
-                        key={index}
-                        className={`p-2 border rounded mb-2 ${
-                          selectedAddress === index ? "border-primary" : ""
-                        }`}
-                      >
-                        <div className="d-flex justify-content-between align-items-start">
-                          <div>
-                            <strong>{addr.name}</strong> ({addr.phone})
-                            <p className="mb-1 small">
-                              {addr.address}, {addr.city}, {addr.state} -{" "}
-                              {addr.pincode}
-                            </p>
-                          </div>
-                          <div>
-                            <button
-                              className="btn btn-sm btn-outline-primary me-2"
-                              onClick={() => setSelectedAddress(index)}
-                            >
-                              {selectedAddress === index ? "Selected" : "Select"}
-                            </button>
-                            <button
-                              className="btn btn-sm btn-outline-danger"
-                              onClick={() => removeAddress(index)}
-                            >
-                              Remove
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-muted">No saved addresses. Add one below.</p>
-                )}
+  {addresses.length > 0 ? (
+    <div className="mb-3">
+      {addresses.map((addr, index) => (
+        <div
+          key={index}
+          className={`p-2 border rounded mb-2 ${
+            selectedAddress === index ? "border-primary" : ""
+          }`}
+        >
+          <div>
+            <strong>{addr.name}</strong> ({addr.phone})
+            <p className="mb-1 small">
+              {addr.address}, {addr.city}, {addr.state} - {addr.pincode}
+            </p>
+          </div>
 
-                <h6>Add New Address</h6>
-                <input
-                  type="text"
-                  placeholder="Full Name"
-                  className="form-control mb-2"
-                  value={newAddress.name}
-                  onChange={(e) => setNewAddress({ ...newAddress, name: e.target.value })}
-                />
-                <input
-                  type="text"
-                  placeholder="Phone"
-                  className="form-control mb-2"
-                  value={newAddress.phone}
-                  onChange={(e) => setNewAddress({ ...newAddress, phone: e.target.value })}
-                />
-                <textarea
-                  placeholder="Address"
-                  className="form-control mb-2"
-                  value={newAddress.address}
-                  onChange={(e) => setNewAddress({ ...newAddress, address: e.target.value })}
-                />
-                <input
-                  type="text"
-                  placeholder="City"
-                  className="form-control mb-2"
-                  value={newAddress.city}
-                  onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
-                />
-                <input
-                  type="text"
-                  placeholder="State"
-                  className="form-control mb-2"
-                  value={newAddress.state}
-                  onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })}
-                />
-                <input
-                  type="text"
-                  placeholder="Pincode"
-                  className="form-control mb-3"
-                  value={newAddress.pincode}
-                  onChange={(e) =>
-                    setNewAddress({ ...newAddress, pincode: e.target.value })
-                  }
-                />
-                <button className="btn btn-success w-100" onClick={addAddress}>
-                  Save Address
-                </button>
-              </div>
+          {/* Responsive buttons */}
+          <div className="d-flex flex-wrap gap-2 mt-2">
+            <button
+              className="btn btn-sm btn-outline-primary w-100 w-md-auto"
+              onClick={() => setSelectedAddress(index)}
+            >
+              {selectedAddress === index ? "Selected" : "Select"}
+            </button>
+            <button
+              className="btn btn-sm btn-outline-warning w-100 w-md-auto"
+              onClick={() => editAddress(index)}
+            >
+              Edit
+            </button>
+            <button
+              className="btn btn-sm btn-outline-danger w-100 w-md-auto"
+              onClick={() => removeAddress(index)}
+            >
+              Remove
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <p className="text-muted">No saved addresses. Add one below.</p>
+  )}
+
+  {/* Reusable AddressForm */}
+  <AddressForm
+    newAddress={newAddress}
+    setNewAddress={setNewAddress}
+    addAddress={addOrUpdateAddress}
+    editMode={editIndex !== null}
+  />
+</div>
+
             </div>
 
             {/* ---------------- Price Details ---------------- */}
@@ -359,8 +343,6 @@ const Cart = () => {
           </div>
         </div>
       )}
-
-      <ToastContainer position="bottom-right" autoClose={2000} />
     </>
   );
 };

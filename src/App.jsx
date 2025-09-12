@@ -17,10 +17,10 @@ export default function App() {
   const [email, setEmail] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
 
-  // 🔹 Filters
+  // Filters
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState([]);
   const [sortOrder, setSortOrder] = useState("");
 
   // Fetch products for homepage
@@ -61,13 +61,25 @@ export default function App() {
       );
   };
 
+  // Toggle category filter
+  const handleCategoryChange = (category) => {
+    setSelectedCategories((prev) =>
+      prev.includes(category)
+        ? prev.filter((c) => c !== category) // remove
+        : [...prev, category] // add
+    );
+  };
+
   // Apply filters on search results
   const filteredResults = searchResults
     .filter((product) =>
       product.name.toLowerCase().includes(searchQuery.toLowerCase())
     )
     .filter((product) => {
-      if (selectedCategory && product.category !== selectedCategory) {
+      if (
+        selectedCategories.length > 0 &&
+        !selectedCategories.includes(product.category)
+      ) {
         return false;
       }
       return true;
@@ -106,6 +118,7 @@ export default function App() {
               Shop by Category
             </h2>
             <div className="row g-4">
+              {/* Men */}
               <div className="col-md-3">
                 <div className="card category-card border-0 shadow-sm h-100 text-center overflow-hidden">
                   <img
@@ -121,6 +134,7 @@ export default function App() {
                   </div>
                 </div>
               </div>
+              {/* Women */}
               <div className="col-md-3">
                 <div className="card category-card border-0 shadow-sm h-100 text-center overflow-hidden">
                   <img
@@ -136,6 +150,7 @@ export default function App() {
                   </div>
                 </div>
               </div>
+              {/* Kids */}
               <div className="col-md-3">
                 <div className="card category-card border-0 shadow-sm h-100 text-center overflow-hidden">
                   <img
@@ -151,6 +166,7 @@ export default function App() {
                   </div>
                 </div>
               </div>
+              {/* Accessories */}
               <div className="col-md-3">
                 <div className="card category-card border-0 shadow-sm h-100 text-center overflow-hidden">
                   <img
@@ -278,7 +294,7 @@ export default function App() {
           </section>
         </>
       ) : (
-        // Search Results Page with Filters
+        // 🔹 Search Results Page with Filters
         <section className="container my-5">
           <h2 className="fw-bold mb-4">Search Results</h2>
           <div className="row">
@@ -287,19 +303,24 @@ export default function App() {
               <div className="card shadow-sm p-3">
                 <h5 className="fw-bold mb-3">Filters</h5>
 
-                {/* Category */}
+                {/* Category checkboxes */}
                 <label className="form-label fw-semibold">Category</label>
-                <select
-                  className="form-select mb-3"
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                >
-                  <option value="">All</option>
-                  <option value="Men">Men</option>
-                  <option value="Women">Women</option>
-                  <option value="Kids">Kids</option>
-                  <option value="Accessories">Accessories</option>
-                </select>
+                <div className="mb-3">
+                  {["Men", "Women", "Kids", "Accessories"].map((cat) => (
+                    <div key={cat} className="form-check">
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        id={cat}
+                        checked={selectedCategories.includes(cat)}
+                        onChange={() => handleCategoryChange(cat)}
+                      />
+                      <label htmlFor={cat} className="form-check-label">
+                        {cat}
+                      </label>
+                    </div>
+                  ))}
+                </div>
 
                 {/* Price Range */}
                 <label className="form-label fw-semibold">Price Range</label>
@@ -334,7 +355,7 @@ export default function App() {
                   onClick={() => {
                     setMinPrice("");
                     setMaxPrice("");
-                    setSelectedCategory("");
+                    setSelectedCategories([]);
                     setSortOrder("");
                   }}
                 >

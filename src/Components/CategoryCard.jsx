@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import Navbar from "./Navbar";
 import ProductCard from "./ProductCard";
 
 function CategoryCard() {
   const { categoryName } = useParams();
-  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [error, setError] = useState("");
 
@@ -15,75 +14,56 @@ function CategoryCard() {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Filter states
-  const [selectedCategory, setSelectedCategory] = useState(
-    decodeURIComponent(categoryName) || ""
+  const [selectedCategories, setSelectedCategories] = useState(
+    categoryName ? [decodeURIComponent(categoryName)] : []
   );
   const [priceRange, setPriceRange] = useState(5000);
   const [sortOrder, setSortOrder] = useState("");
 
-  // 🔹 Fetch products dynamically when category changes
+  // 🔹 Fetch all products once
   useEffect(() => {
-    if (!selectedCategory) {
-      // Fetch all products if no category selected
-      fetch("https://project-ishara.vercel.app/api/products")
-        .then((res) => {
-          if (!res.ok) throw new Error("Failed to fetch");
-          return res.json();
-        })
-        .then((data) => {
-          setProducts(data.data?.products || []);
-          setError("");
-        })
-        .catch((err) => {
-          console.error("Error fetching products:", err);
-          setError("Failed to load products");
-        });
-    } else {
-      // Fetch products of selected category
-      fetch(
-        `https://project-ishara.vercel.app/api/categories/${encodeURIComponent(
-          selectedCategory
-        )}`
-      )
-        .then((res) => {
-          if (!res.ok) throw new Error("Failed to fetch");
-          return res.json();
-        })
-        .then((data) => {
-          setProducts(data.data?.category?.products || []);
-          setError("");
-        })
-        .catch((err) => {
-          console.error("Error fetching category products:", err);
-          setError("Failed to load products");
-        });
-    }
-  }, [selectedCategory]);
+    fetch("https://project-ishara.vercel.app/api/products")
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch");
+        return res.json();
+      })
+      .then((data) => {
+        setProducts(data.data?.products || []);
+        setError("");
+      })
+      .catch((err) => {
+        console.error("Error fetching products:", err);
+        setError("Failed to load products");
+      });
+  }, []);
 
-  // 🔹 Update URL when filter category changes
-  useEffect(() => {
-    if (selectedCategory) {
-      navigate(`/category/${encodeURIComponent(selectedCategory)}`);
-    }
-  }, [selectedCategory, navigate]);
+  // 🔹 Handle category checkbox toggle
+  const handleCategoryChange = (category) => {
+    setSelectedCategories((prev) =>
+      prev.includes(category)
+        ? prev.filter((c) => c !== category) // remove if exists
+        : [...prev, category] // add if not exists
+    );
+  };
 
-  // 🔹 Filter + Search (apply category filter even while searching)
+  // 🔹 Filter + Search + Sort
   let filteredProducts = isSearching
-    ? searchResults
-        .filter((product) =>
-          product.name.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-        .filter(
-          (product) =>
-            !selectedCategory ||
-            product.category?.toLowerCase() === selectedCategory.toLowerCase()
-        )
+    ? searchResults.filter((product) =>
+        product.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
     : [...products];
 
-  // Price filter
+  // Apply category filter
+  if (selectedCategories.length > 0) {
+    filteredProducts = filteredProducts.filter((product) =>
+      selectedCategories.includes(product.category)
+    );
+  }
+
+  // Apply price filter
   filteredProducts = filteredProducts.filter((p) => p.price <= priceRange);
 
-  // Sort
+  // Apply sort
   if (sortOrder === "lowToHigh") {
     filteredProducts.sort((a, b) => a.price - b.price);
   } else if (sortOrder === "highToLow") {
@@ -107,17 +87,22 @@ function CategoryCard() {
 
               {/* Category */}
               <label className="form-label fw-semibold">Category</label>
-              <select
-                className="form-select mb-3"
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-              >
-                <option value="">All</option>
-                <option value="Men">Men</option>
-                <option value="Women">Women</option>
-                <option value="Kids">Kids</option>
-                <option value="Accessories">Accessories</option>
-              </select>
+              <div className="mb-3">
+                {["Men", "Women", "Kids", "Accessories"].map((cat) => (
+                  <div key={cat} className="form-check">
+                    <input
+                      type="checkbox"
+                      className="form-check-input"
+                      id={cat}
+                      checked={selectedCategories.includes(cat)}
+                      onChange={() => handleCategoryChange(cat)}
+                    />
+                    <label htmlFor={cat} className="form-check-label">
+                      {cat}
+                    </label>
+                  </div>
+                ))}
+              </div>
 
               {/* Price Range */}
               <label className="form-label fw-semibold">Price Range</label>
@@ -150,7 +135,7 @@ function CategoryCard() {
               <button
                 className="btn btn-secondary w-100"
                 onClick={() => {
-                  setSelectedCategory("");
+                  setSelectedCategories([]);
                   setPriceRange(5000);
                   setSortOrder("");
                 }}
@@ -165,7 +150,9 @@ function CategoryCard() {
             <h2 className="mb-3">
               {isSearching
                 ? "Search Results"
-                : selectedCategory || "All Products"}
+                : selectedCategories.length > 0
+                ? selectedCategories.join(", ")
+                : "All Products"}
             </h2>
             {error && <p className="text-danger">{error}</p>}
             <div className="row">
