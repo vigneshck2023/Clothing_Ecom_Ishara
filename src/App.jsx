@@ -294,7 +294,7 @@ export default function App() {
           </section>
         </>
       ) : (
-        // 🔹 Search Results Page with Filters
+        // Search Results Page with Filters
         <section className="container my-5">
           <h2 className="fw-bold mb-4">Search Results</h2>
           <div className="row">
