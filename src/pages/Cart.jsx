@@ -53,10 +53,10 @@ const Cart = () => {
     if (editIndex !== null) {
       updated = [...addresses];
       updated[editIndex] = newAddress;
-      toast.success("Address updated!", {autoClose: 2000});
+      toast.success("Address updated!", { autoClose: 2000 });
     } else {
       updated = [...addresses, newAddress];
-      toast.success("Address added!", {autoClose: 2000});
+      toast.success("Address added!", { autoClose: 2000 });
     }
 
     setAddresses(updated);
@@ -92,7 +92,7 @@ const Cart = () => {
     }
     const productId = item.id || item._id || item.name;
     const existing = wishlistItems.find(
-      (i) => i.id === productId && i.selectedSize === sizeToUse
+      (i) => i.id === productId && i.selectedSize === sizeToUse,
     );
     if (!existing) {
       addToWishlist({ ...item, selectedSize: sizeToUse, qty: undefined });
@@ -108,7 +108,7 @@ const Cart = () => {
     }
     const productId = selectedItem.id || selectedItem._id || selectedItem.name;
     const existing = wishlistItems.find(
-      (i) => i.id === productId && i.selectedSize === selectedSize
+      (i) => i.id === productId && i.selectedSize === selectedSize,
     );
     if (!existing) {
       addToWishlist({ ...selectedItem, selectedSize, qty: undefined });
@@ -121,16 +121,16 @@ const Cart = () => {
 
   const totalMRP = cartItems.reduce(
     (total, item) => total + (item.originalPrice || item.price) * item.qty,
-    0
+    0,
   );
   const totalDiscount = cartItems.reduce(
     (total, item) =>
       total + ((item.originalPrice || item.price) - item.price) * item.qty,
-    0
+    0,
   );
   const finalPrice = cartItems.reduce(
     (total, item) => total + item.price * item.qty,
-    0
+    0,
   );
 
   const handlePlaceOrder = () => {
@@ -161,9 +161,14 @@ const Cart = () => {
                 <div key={index} className="col-12 mb-4">
                   <div className="card shadow-sm p-2">
                     <div className="d-flex align-items-center">
-                      <div className="me-3" style={{ width: "120px", flexShrink: 0 }}>
+                      <div
+                        className="me-3"
+                        style={{ width: "120px", flexShrink: 0 }}
+                      >
                         <img
-                          src={item.image || item.images?.[0] || "/placeholder.png"}
+                          src={
+                            item.image || item.images?.[0] || "/placeholder.png"
+                          }
                           alt={item.name}
                           className="img-fluid rounded"
                           style={{
@@ -186,14 +191,18 @@ const Cart = () => {
                         <div className="d-flex align-items-center mb-2">
                           <button
                             className="btn btn-outline-secondary btn-sm"
-                            onClick={() => decreaseQty(item.id, item.selectedSize)}
+                            onClick={() =>
+                              decreaseQty(item.id, item.selectedSize)
+                            }
                           >
                             -
                           </button>
                           <span className="mx-2 fw-bold">{item.qty}</span>
                           <button
                             className="btn btn-outline-secondary btn-sm"
-                            onClick={() => increaseQty(item.id, item.selectedSize)}
+                            onClick={() =>
+                              increaseQty(item.id, item.selectedSize)
+                            }
                           >
                             +
                           </button>
@@ -201,7 +210,9 @@ const Cart = () => {
                         <div className="mt-auto d-flex gap-2">
                           <button
                             className="btn btn-outline-danger btn-sm"
-                            onClick={() => removeFromCart(item.id, item.selectedSize)}
+                            onClick={() =>
+                              removeFromCart(item.id, item.selectedSize)
+                            }
                           >
                             Remove
                           </button>
@@ -220,61 +231,63 @@ const Cart = () => {
 
               {/* ---------------- Address Section ---------------- */}
               <div className="card shadow-sm p-3 mt-4">
-  <h5 className="mb-3">Delivery Addresses</h5>
+                <h5 className="mb-3">Delivery Addresses</h5>
 
-  {addresses.length > 0 ? (
-    <div className="mb-3">
-      {addresses.map((addr, index) => (
-        <div
-          key={index}
-          className={`p-2 border rounded mb-2 ${
-            selectedAddress === index ? "border-primary" : ""
-          }`}
-        >
-          <div>
-            <strong>{addr.name}</strong> ({addr.phone})
-            <p className="mb-1 small">
-              {addr.address}, {addr.city}, {addr.state} - {addr.pincode}
-            </p>
-          </div>
+                {addresses.length > 0 ? (
+                  <div className="mb-3">
+                    {addresses.map((addr, index) => (
+                      <div
+                        key={index}
+                        className={`p-2 border rounded mb-2 ${
+                          selectedAddress === index ? "border-primary" : ""
+                        }`}
+                      >
+                        <div>
+                          <strong>{addr.name}</strong> ({addr.phone})
+                          <p className="mb-1 small">
+                            {addr.address}, {addr.city}, {addr.state} -{" "}
+                            {addr.pincode}
+                          </p>
+                        </div>
 
-          {/* Responsive buttons */}
-          <div className="d-flex flex-wrap gap-2 mt-2">
-            <button
-              className="btn btn-sm btn-outline-primary w-100 w-md-auto"
-              onClick={() => setSelectedAddress(index)}
-            >
-              {selectedAddress === index ? "Selected" : "Select"}
-            </button>
-            <button
-              className="btn btn-sm btn-outline-warning w-100 w-md-auto"
-              onClick={() => editAddress(index)}
-            >
-              Edit
-            </button>
-            <button
-              className="btn btn-sm btn-outline-danger w-100 w-md-auto"
-              onClick={() => removeAddress(index)}
-            >
-              Remove
-            </button>
-          </div>
-        </div>
-      ))}
-    </div>
-  ) : (
-    <p className="text-muted">No saved addresses. Add one below.</p>
-  )}
+                        {/* Responsive buttons */}
+                        <div className="d-flex flex-wrap gap-2 mt-2">
+                          <button
+                            className="btn btn-sm btn-outline-primary w-100 w-md-auto"
+                            onClick={() => setSelectedAddress(index)}
+                          >
+                            {selectedAddress === index ? "Selected" : "Select"}
+                          </button>
+                          <button
+                            className="btn btn-sm btn-outline-warning w-100 w-md-auto"
+                            onClick={() => editAddress(index)}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="btn btn-sm btn-outline-danger w-100 w-md-auto"
+                            onClick={() => removeAddress(index)}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted">
+                    No saved addresses. Add one below.
+                  </p>
+                )}
 
-  {/* Reusable AddressForm */}
-  <AddressForm
-    newAddress={newAddress}
-    setNewAddress={setNewAddress}
-    addAddress={addOrUpdateAddress}
-    editMode={editIndex !== null}
-  />
-</div>
-
+                {/* Reusable AddressForm */}
+                <AddressForm
+                  newAddress={newAddress}
+                  setNewAddress={setNewAddress}
+                  addAddress={addOrUpdateAddress}
+                  editMode={editIndex !== null}
+                />
+              </div>
             </div>
 
             {/* ---------------- Price Details ---------------- */}
@@ -294,7 +307,10 @@ const Cart = () => {
                   <span>Total Amount</span>
                   <span>₹{finalPrice}</span>
                 </div>
-                <button className="btn btn-primary w-100" onClick={handlePlaceOrder}>
+                <button
+                  className="btn btn-primary w-100"
+                  onClick={handlePlaceOrder}
+                >
                   Place Order
                 </button>
               </div>
@@ -317,25 +333,34 @@ const Cart = () => {
             <div className="modal-content p-3">
               <h5>Select Size for {selectedItem.name}</h5>
               <div className="d-flex flex-wrap gap-2 my-3">
-                {(selectedItem.sizes?.length ? selectedItem.sizes : ["Free Size"]).map(
-                  (size) => (
-                    <button
-                      key={size}
-                      className={`btn ${
-                        selectedSize === size ? "btn-primary" : "btn-outline-primary"
-                      }`}
-                      onClick={() => setSelectedSize(size)}
-                    >
-                      {size}
-                    </button>
-                  )
-                )}
+                {(selectedItem.sizes?.length
+                  ? selectedItem.sizes
+                  : ["Free Size"]
+                ).map((size) => (
+                  <button
+                    key={size}
+                    className={`btn ${
+                      selectedSize === size
+                        ? "btn-primary"
+                        : "btn-outline-primary"
+                    }`}
+                    onClick={() => setSelectedSize(size)}
+                  >
+                    {size}
+                  </button>
+                ))}
               </div>
               <div className="d-flex justify-content-end gap-2">
-                <button className="btn btn-secondary" onClick={() => setSelectedItem(null)}>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => setSelectedItem(null)}
+                >
                   Cancel
                 </button>
-                <button className="btn btn-success" onClick={confirmSizeForWishlist}>
+                <button
+                  className="btn btn-success"
+                  onClick={confirmSizeForWishlist}
+                >
                   Confirm
                 </button>
               </div>
