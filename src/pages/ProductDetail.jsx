@@ -123,7 +123,7 @@ function ProductDetail() {
   className="img-fluid"
   style={{
     maxHeight: "500px",
-    width: "75%",
+    width: "60%",
     objectFit: "cover",
     borderRadius: "0px",
     border: "none",
