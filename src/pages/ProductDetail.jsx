@@ -105,7 +105,7 @@ function ProductDetail() {
           mainImage === img ? "border-dark" : "border-secondary"
         }`}
         style={{
-          width: "70px",
+          width: "65px",
           height: "65px",
           cursor: "pointer",
           borderRadius: "6px",
