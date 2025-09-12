@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
 import ProductCard from "./ProductCard";
 
 function CategoryCard() {
   const { categoryName } = useParams();
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [error, setError] = useState("");
 
@@ -14,52 +15,75 @@ function CategoryCard() {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Filter states
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [priceRange, setPriceRange] = useState(5000); // default slider max
+  const [selectedCategory, setSelectedCategory] = useState(
+    decodeURIComponent(categoryName) || ""
+  );
+  const [priceRange, setPriceRange] = useState(5000);
   const [sortOrder, setSortOrder] = useState("");
 
+  // 🔹 Fetch products dynamically when category changes
   useEffect(() => {
-    if (!categoryName) return;
-
-    const formattedCategory = decodeURIComponent(categoryName);
-
-    fetch(
-      `https://project-ishara.vercel.app/api/categories/${encodeURIComponent(
-        formattedCategory
-      )}`
-    )
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch");
-        return res.json();
-      })
-      .then((data) => {
-        setProducts(data.data?.category?.products || []);
-        setError("");
-      })
-      .catch((err) => {
-        console.error("Error fetching category products:", err);
-        setError("Failed to load products");
-      });
-  }, [categoryName]);
-
-  // Filter + Search
-  let filteredProducts = isSearching
-    ? searchResults.filter((product) =>
-        product.name.toLowerCase().includes(searchQuery.toLowerCase())
+    if (!selectedCategory) {
+      // Fetch all products if no category selected
+      fetch("https://project-ishara.vercel.app/api/products")
+        .then((res) => {
+          if (!res.ok) throw new Error("Failed to fetch");
+          return res.json();
+        })
+        .then((data) => {
+          setProducts(data.data?.products || []);
+          setError("");
+        })
+        .catch((err) => {
+          console.error("Error fetching products:", err);
+          setError("Failed to load products");
+        });
+    } else {
+      // Fetch products of selected category
+      fetch(
+        `https://project-ishara.vercel.app/api/categories/${encodeURIComponent(
+          selectedCategory
+        )}`
       )
+        .then((res) => {
+          if (!res.ok) throw new Error("Failed to fetch");
+          return res.json();
+        })
+        .then((data) => {
+          setProducts(data.data?.category?.products || []);
+          setError("");
+        })
+        .catch((err) => {
+          console.error("Error fetching category products:", err);
+          setError("Failed to load products");
+        });
+    }
+  }, [selectedCategory]);
+
+  // 🔹 Update URL when filter category changes
+  useEffect(() => {
+    if (selectedCategory) {
+      navigate(`/category/${encodeURIComponent(selectedCategory)}`);
+    }
+  }, [selectedCategory, navigate]);
+
+  // 🔹 Filter + Search (apply category filter even while searching)
+  let filteredProducts = isSearching
+    ? searchResults
+        .filter((product) =>
+          product.name.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+        .filter(
+          (product) =>
+            !selectedCategory ||
+            product.category?.toLowerCase() === selectedCategory.toLowerCase()
+        )
     : [...products];
 
-  // Apply Price Range (0 - sliderValue)
+  // Price filter
   filteredProducts = filteredProducts.filter((p) => p.price <= priceRange);
 
-  // Apply Category
-  if (selectedCategory) {
-    filteredProducts = filteredProducts.filter(
-      (p) => p.category === selectedCategory
-    );
-  }
-
-  // Apply Sort
+  // Sort
   if (sortOrder === "lowToHigh") {
     filteredProducts.sort((a, b) => a.price - b.price);
   } else if (sortOrder === "highToLow") {
@@ -68,7 +92,6 @@ function CategoryCard() {
 
   return (
     <>
-      {/* Navbar */}
       <Navbar
         setSearchResults={setSearchResults}
         setIsSearching={setIsSearching}
@@ -77,7 +100,7 @@ function CategoryCard() {
 
       <div className="container mt-4">
         <div className="row">
-          {/* Card Filters */}
+          {/* Filters */}
           <div className="col-md-3 mb-4">
             <div className="card shadow-sm p-3">
               <h5 className="fw-bold mb-3">Filters</h5>
@@ -124,7 +147,6 @@ function CategoryCard() {
                 <option value="highToLow">Price: High to Low</option>
               </select>
 
-              {/* Reset */}
               <button
                 className="btn btn-secondary w-100"
                 onClick={() => {
@@ -143,7 +165,7 @@ function CategoryCard() {
             <h2 className="mb-3">
               {isSearching
                 ? "Search Results"
-                : `${decodeURIComponent(categoryName)} Collection`}
+                : selectedCategory || "All Products"}
             </h2>
             {error && <p className="text-danger">{error}</p>}
             <div className="row">

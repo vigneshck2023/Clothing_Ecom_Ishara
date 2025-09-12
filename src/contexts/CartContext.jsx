@@ -12,21 +12,31 @@ export const CartProvider = ({ children }) => {
   }, [cartItems]);
 
   const addToCart = (product) => {
-    setCartItems((prev) => {
-      const existingIndex = prev.findIndex(
-        (item) =>
-          item.id === product.id && item.selectedSize === product.selectedSize
+  setCartItems((prevItems) => {
+    const productId = product.id || product._id || product.name;
+
+    // check if same product with same size exists
+    const existingItem = prevItems.find(
+      (item) =>
+        (item.id || item._id || item.name) === productId &&
+        item.selectedSize === product.selectedSize
+    );
+
+    if (existingItem) {
+      // update qty if exists
+      return prevItems.map((item) =>
+        (item.id || item._id || item.name) === productId &&
+        item.selectedSize === product.selectedSize
+          ? { ...item, qty: item.qty + product.qty }
+          : item
       );
+    } else {
+      // else add new product
+      return [...prevItems, product];
+    }
+  });
+};
 
-      if (existingIndex !== -1) {
-        const updated = [...prev];
-        updated[existingIndex].qty += product.qty || 1;
-        return updated;
-      }
-
-      return [...prev, { ...product, qty: product.qty || 1 }];
-    });
-  };
 
   const removeFromCart = (id, selectedSize) => {
     setCartItems((prev) =>

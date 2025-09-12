@@ -46,25 +46,24 @@ function ProductDetail() {
     );
 
   const handleAddOrUpdateCart = () => {
-    if (product.sizes?.length && !selectedSize) {
-      toast.error("Please select a size!");
-      return;
-    }
+  if (product.sizes?.length && !selectedSize) {
+    toast.error("Please select a size!");
+    return;
+  }
 
-    if (cartItem) removeFromCart(cartItem.id, cartItem.selectedSize);
+  const productToAdd = { ...product, qty: quantity, selectedSize };
+  addToCart(productToAdd);
 
-    const productToAdd = { ...product, qty: quantity, selectedSize };
-    addToCart(productToAdd);
+  // Remove from wishlist if present
+  const productId = product.id || product._id || product.name;
+  const wishItem = wishlistItems.find(
+    (i) => i.id === productId && i.selectedSize === selectedSize
+  );
+  if (wishItem) removeFromWishlist(productId, selectedSize);
 
-    // Remove from wishlist if present
-    const productId = product.id || product._id || product.name;
-    const wishItem = wishlistItems.find(
-      (i) => i.id === productId && i.selectedSize === selectedSize
-    );
-    if (wishItem) removeFromWishlist(productId, selectedSize);
+  toast.success(cartItem ? "Cart updated!" : "Added to cart!");
+};
 
-    toast.success(cartItem ? "Cart updated!" : "Added to cart!");
-  };
 
   const handleMoveToWishlist = () => {
     if (product.sizes?.length && !selectedSize) {
