@@ -46,24 +46,23 @@ function ProductDetail() {
     );
 
   const handleAddOrUpdateCart = () => {
-  if (product.sizes?.length && !selectedSize) {
-    toast.error("Please select a size!");
-    return;
-  }
+    if (product.sizes?.length && !selectedSize) {
+      toast.error("Please select a size!");
+      return;
+    }
 
-  const productToAdd = { ...product, qty: quantity, selectedSize };
-  addToCart(productToAdd);
+    const productToAdd = { ...product, qty: quantity, selectedSize };
+    addToCart(productToAdd);
 
-  // Remove from wishlist if present
-  const productId = product.id || product._id || product.name;
-  const wishItem = wishlistItems.find(
-    (i) => i.id === productId && i.selectedSize === selectedSize
-  );
-  if (wishItem) removeFromWishlist(productId, selectedSize);
+    // Remove from wishlist if present
+    const productId = product.id || product._id || product.name;
+    const wishItem = wishlistItems.find(
+      (i) => i.id === productId && i.selectedSize === selectedSize
+    );
+    if (wishItem) removeFromWishlist(productId, selectedSize);
 
-  toast.success(cartItem ? "Cart updated!" : "Added to cart!");
-};
-
+    toast.success(cartItem ? "Cart updated!" : "Added to cart!");
+  };
 
   const handleMoveToWishlist = () => {
     if (product.sizes?.length && !selectedSize) {
@@ -89,24 +88,28 @@ function ProductDetail() {
     <>
       <Navbar />
       <div className="container my-5">
-        <div className="row">
+        <div className="row flex-column flex-md-row">
           {/* Left side: images */}
-          <div className="col-md-6 d-flex">
-            <div className="d-flex flex-column me-3" style={{ gap: "10px" }}>
+          <div className="col-12 col-md-6 d-flex flex-column flex-md-row">
+            <div
+              className="d-flex flex-row flex-md-column overflow-auto mb-3 mb-md-0"
+              style={{ gap: "10px", maxHeight: "100px" }}
+            >
               {product.images?.map((img, i) => (
                 <img
                   key={i}
                   src={img}
                   alt={`thumb-${i}`}
                   onClick={() => setMainImage(img)}
+                  className={`border ${
+                    mainImage === img ? "border-dark" : "border-secondary"
+                  }`}
                   style={{
                     width: "60px",
                     height: "55px",
-                    objectFit: "cover",
-                    border: mainImage === img ? "2px solid #000" : "1px solid #ccc",
-                    borderRadius: "6px",
                     cursor: "pointer",
-                    padding: "2px",
+                    borderRadius: "6px",
+                    objectFit: "cover",
                   }}
                 />
               ))}
@@ -115,10 +118,10 @@ function ProductDetail() {
               <img
                 src={mainImage}
                 alt="main"
+                className="img-fluid"
                 style={{
+                  maxHeight: "400px",
                   width: "100%",
-                  maxWidth: "375px",
-                  height: "500px",
                   objectFit: "contain",
                   borderRadius: "8px",
                   border: "1px solid #ddd",
@@ -128,7 +131,7 @@ function ProductDetail() {
           </div>
 
           {/* Right side: product details */}
-          <div className="col-md-6">
+          <div className="col-12 col-md-6 mt-4 mt-md-0">
             <h3>{product.name}</h3>
             <h4 className="text-danger">₹{product.price}</h4>
 
@@ -147,13 +150,14 @@ function ProductDetail() {
               <div>↩️ 10 Days Returnable</div>
             </div>
 
-            <div className="my-3">
-              <label className="me-2">Quantity:</label>
+            <div className="my-3 d-flex align-items-center">
+              <label className="me-2 mb-0">Quantity:</label>
               <input
                 type="number"
                 value={quantity}
                 min={1}
                 onChange={(e) => setQuantity(Number(e.target.value))}
+                className="form-control d-inline-block"
                 style={{ width: "70px" }}
               />
             </div>
@@ -164,7 +168,7 @@ function ProductDetail() {
                 {product.sizes.map((size, i) => (
                   <button
                     key={i}
-                    className={`btn btn-sm me-2 ${
+                    className={`btn btn-sm me-2 mb-2 ${
                       selectedSize === size ? "btn-dark" : "btn-outline-dark"
                     }`}
                     onClick={() => setSelectedSize(size)}
@@ -175,9 +179,9 @@ function ProductDetail() {
               </div>
             )}
 
-            <div className="my-4">
+            <div className="my-4 d-flex flex-wrap" style={{ gap: "10px" }}>
               <button
-                className="btn btn-primary me-3"
+                className="btn btn-primary"
                 onClick={handleAddOrUpdateCart}
               >
                 {cartItem ? "Update Cart" : "Add to Cart"}
