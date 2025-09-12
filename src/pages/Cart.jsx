@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import Navbar from "../Components/Navbar";
 import { CartContext } from "../contexts/CartContext";
 import { WishlistContext } from "../contexts/WishlistContext";
@@ -16,19 +16,64 @@ const Cart = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedSize, setSelectedSize] = useState("");
 
-  // Move cart item to wishlist
+  // ---------------- Address Management ----------------
+  const [addresses, setAddresses] = useState(() => {
+    return JSON.parse(localStorage.getItem("addresses")) || [];
+  });
+  const [selectedAddress, setSelectedAddress] = useState(null);
+  const [newAddress, setNewAddress] = useState({
+    name: "",
+    phone: "",
+    address: "",
+    city: "",
+    state: "",
+    pincode: "",
+  });
+
+  useEffect(() => {
+    localStorage.setItem("addresses", JSON.stringify(addresses));
+  }, [addresses]);
+
+  const addAddress = () => {
+    if (
+      !newAddress.name ||
+      !newAddress.phone ||
+      !newAddress.address ||
+      !newAddress.city ||
+      !newAddress.state ||
+      !newAddress.pincode
+    ) {
+      toast.error("⚠️ Please fill all fields");
+      return;
+    }
+    const updated = [...addresses, newAddress];
+    setAddresses(updated);
+    setNewAddress({
+      name: "",
+      phone: "",
+      address: "",
+      city: "",
+      state: "",
+      pincode: "",
+    });
+    toast.success("✅ Address added!");
+  };
+
+  const removeAddress = (index) => {
+    const updated = addresses.filter((_, i) => i !== index);
+    setAddresses(updated);
+    if (selectedAddress === index) setSelectedAddress(null);
+    toast.info("Address removed");
+  };
+
+  // ---------------- Cart Logic ----------------
   const moveToWishlist = (item) => {
     const sizeToUse = item.selectedSize || selectedSize;
-
-    // If item has sizes and none selected → show modal
     if (!sizeToUse && item.sizes?.length) {
       setSelectedItem(item);
       return;
     }
-
     const productId = item.id || item._id || item.name;
-
-    // Prevent duplicates in wishlist
     const existing = wishlistItems.find(
       (i) => i.id === productId && i.selectedSize === sizeToUse
     );
@@ -36,29 +81,23 @@ const Cart = () => {
       addToWishlist({ ...item, selectedSize: sizeToUse, qty: undefined });
       toast.success("Moved to Wishlist ❤️");
     }
-
     removeFromCart(item.id, item.selectedSize || sizeToUse);
   };
 
-  // Confirm size for wishlist modal
   const confirmSizeForWishlist = () => {
     if (!selectedSize) {
       alert("⚠️ Please select a size.");
       return;
     }
-
     const productId = selectedItem.id || selectedItem._id || selectedItem.name;
     const existing = wishlistItems.find(
       (i) => i.id === productId && i.selectedSize === selectedSize
     );
-
     if (!existing) {
       addToWishlist({ ...selectedItem, selectedSize, qty: undefined });
       toast.success("Moved to Wishlist ❤️");
     }
-
     removeFromCart(selectedItem.id, selectedItem.selectedSize || selectedSize);
-
     setSelectedItem(null);
     setSelectedSize("");
   };
@@ -78,6 +117,14 @@ const Cart = () => {
   );
 
   const handlePlaceOrder = () => {
+    if (cartItems.length === 0) {
+      toast.error("⚠️ Your cart is empty");
+      return;
+    }
+    if (selectedAddress === null) {
+      toast.error("⚠️ Please select a delivery address");
+      return;
+    }
     toast.success("🎉 Order placed successfully!");
     clearCart();
     setTimeout(() => navigate("/"), 2000);
@@ -93,11 +140,7 @@ const Cart = () => {
           <div className="row g-3 gx-4">
             <div className="col-lg-8">
               {cartItems.map((item, index) => (
-                <div
-                  key={index}
-                  className="col-12 mb-4"
-                  style={{ cursor: "pointer" }}
-                >
+                <div key={index} className="col-12 mb-4">
                   <div className="card shadow-sm p-2">
                     <div className="d-flex align-items-center">
                       <div className="me-3" style={{ width: "120px", flexShrink: 0 }}>
@@ -114,7 +157,6 @@ const Cart = () => {
                           }}
                         />
                       </div>
-
                       <div className="flex-grow-1 d-flex flex-column">
                         <h6 className="mb-1">{item.name}</h6>
                         {item.selectedSize && (
@@ -123,45 +165,31 @@ const Cart = () => {
                           </p>
                         )}
                         <p className="fw-bold mb-2">₹{item.price * item.qty}</p>
-
                         <div className="d-flex align-items-center mb-2">
                           <button
                             className="btn btn-outline-secondary btn-sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              decreaseQty(item.id, item.selectedSize);
-                            }}
+                            onClick={() => decreaseQty(item.id, item.selectedSize)}
                           >
                             -
                           </button>
                           <span className="mx-2 fw-bold">{item.qty}</span>
                           <button
                             className="btn btn-outline-secondary btn-sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              increaseQty(item.id, item.selectedSize);
-                            }}
+                            onClick={() => increaseQty(item.id, item.selectedSize)}
                           >
                             +
                           </button>
                         </div>
-
                         <div className="mt-auto d-flex gap-2">
                           <button
                             className="btn btn-outline-danger btn-sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              removeFromCart(item.id, item.selectedSize);
-                            }}
+                            onClick={() => removeFromCart(item.id, item.selectedSize)}
                           >
                             Remove
                           </button>
                           <button
                             className="btn btn-outline-primary btn-sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              moveToWishlist(item);
-                            }}
+                            onClick={() => moveToWishlist(item)}
                           >
                             Move to Wishlist
                           </button>
@@ -171,8 +199,101 @@ const Cart = () => {
                   </div>
                 </div>
               ))}
+
+              {/* ---------------- Address Section ---------------- */}
+              <div className="card shadow-sm p-3 mt-4">
+                <h5 className="mb-3">Delivery Addresses</h5>
+
+                {addresses.length > 0 ? (
+                  <div className="mb-3">
+                    {addresses.map((addr, index) => (
+                      <div
+                        key={index}
+                        className={`p-2 border rounded mb-2 ${
+                          selectedAddress === index ? "border-primary" : ""
+                        }`}
+                      >
+                        <div className="d-flex justify-content-between align-items-start">
+                          <div>
+                            <strong>{addr.name}</strong> ({addr.phone})
+                            <p className="mb-1 small">
+                              {addr.address}, {addr.city}, {addr.state} -{" "}
+                              {addr.pincode}
+                            </p>
+                          </div>
+                          <div>
+                            <button
+                              className="btn btn-sm btn-outline-primary me-2"
+                              onClick={() => setSelectedAddress(index)}
+                            >
+                              {selectedAddress === index ? "Selected" : "Select"}
+                            </button>
+                            <button
+                              className="btn btn-sm btn-outline-danger"
+                              onClick={() => removeAddress(index)}
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted">No saved addresses. Add one below.</p>
+                )}
+
+                <h6>Add New Address</h6>
+                <input
+                  type="text"
+                  placeholder="Full Name"
+                  className="form-control mb-2"
+                  value={newAddress.name}
+                  onChange={(e) => setNewAddress({ ...newAddress, name: e.target.value })}
+                />
+                <input
+                  type="text"
+                  placeholder="Phone"
+                  className="form-control mb-2"
+                  value={newAddress.phone}
+                  onChange={(e) => setNewAddress({ ...newAddress, phone: e.target.value })}
+                />
+                <textarea
+                  placeholder="Address"
+                  className="form-control mb-2"
+                  value={newAddress.address}
+                  onChange={(e) => setNewAddress({ ...newAddress, address: e.target.value })}
+                />
+                <input
+                  type="text"
+                  placeholder="City"
+                  className="form-control mb-2"
+                  value={newAddress.city}
+                  onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
+                />
+                <input
+                  type="text"
+                  placeholder="State"
+                  className="form-control mb-2"
+                  value={newAddress.state}
+                  onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })}
+                />
+                <input
+                  type="text"
+                  placeholder="Pincode"
+                  className="form-control mb-3"
+                  value={newAddress.pincode}
+                  onChange={(e) =>
+                    setNewAddress({ ...newAddress, pincode: e.target.value })
+                  }
+                />
+                <button className="btn btn-success w-100" onClick={addAddress}>
+                  Save Address
+                </button>
+              </div>
             </div>
 
+            {/* ---------------- Price Details ---------------- */}
             <div className="col-lg-4">
               <div className="card shadow-sm p-3">
                 <h5 className="mb-3">Price Details</h5>
@@ -216,7 +337,9 @@ const Cart = () => {
                   (size) => (
                     <button
                       key={size}
-                      className={`btn ${selectedSize === size ? "btn-primary" : "btn-outline-primary"}`}
+                      className={`btn ${
+                        selectedSize === size ? "btn-primary" : "btn-outline-primary"
+                      }`}
                       onClick={() => setSelectedSize(size)}
                     >
                       {size}
