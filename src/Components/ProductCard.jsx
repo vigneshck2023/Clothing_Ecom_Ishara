@@ -14,6 +14,7 @@ function ProductCard({ product, onAddToCartCallback }) {
   const [showSizeModal, setShowSizeModal] = useState(false);
   const [selectedSize, setSelectedSize] = useState("");
   const [addedToCart, setAddedToCart] = useState(false);
+  const [modalAction, setModalAction] = useState(null); // "wishlist" | "cart" | null
 
   // Normalize product ID
   const productId = product.id || product._id || product.name;
@@ -21,7 +22,7 @@ function ProductCard({ product, onAddToCartCallback }) {
   // Check wishlist
   const isInWishlist = wishlistItems.some((item) => item.id === productId);
 
-  // Check if already in cart (to disable button)
+  // Check if already in cart
   useEffect(() => {
     const inCart = cartItems.some(
       (item) =>
@@ -32,13 +33,12 @@ function ProductCard({ product, onAddToCartCallback }) {
     setAddedToCart(inCart);
   }, [cartItems, productId, product.sizes]);
 
-  // Wishlist toggle - FIXED: Always prompt for size if needed
+  // Toggle wishlist
   const toggleWishlist = (e) => {
     e.stopPropagation();
-    const productId = product.id || product._id || product.name;
 
-    // If product has sizes and none selected → show modal for size selection
     if (product.sizes && product.sizes.length > 0 && !selectedSize) {
+      setModalAction("wishlist");
       setShowSizeModal(true);
       return;
     }
@@ -49,19 +49,19 @@ function ProductCard({ product, onAddToCartCallback }) {
       removeFromWishlist(productId, sizeToUse);
       toast.info("Removed from Wishlist ❤️", { autoClose: 1500 });
     } else {
-      addToWishlist({ 
-        ...product, 
-        id: productId, 
-        selectedSize: sizeToUse 
+      addToWishlist({
+        ...product,
+        id: productId,
+        selectedSize: sizeToUse,
       });
       toast.success("Added to Wishlist ❤️", { autoClose: 1500 });
     }
   };
 
-  // Add to cart handler
+  // Add to cart
   const handleAddToCart = () => {
-    // If product has sizes and none selected → show modal
     if (product.sizes && product.sizes.length > 0 && !selectedSize) {
+      setModalAction("cart");
       setShowSizeModal(true);
       return;
     }
@@ -80,39 +80,39 @@ function ProductCard({ product, onAddToCartCallback }) {
     setAddedToCart(true);
     setSelectedSize("");
     setShowSizeModal(false);
+    setModalAction(null);
 
-    // Call parent callback to remove product from listing if provided
     if (onAddToCartCallback) onAddToCartCallback(productId, sizeToUse);
   };
 
-  // Confirm size selection in modal for BOTH wishlist and cart
-  const confirmSizeSelection = (isForWishlist = false) => {
+  // Confirm modal
+  const confirmSizeSelection = () => {
     if (!selectedSize) {
       alert("⚠️ Please select a size.");
       return;
     }
 
-    if (isForWishlist) {
+    if (modalAction === "wishlist") {
       const sizeToUse = selectedSize;
-      const productId = product.id || product._id || product.name;
 
       if (isInWishlist) {
         removeFromWishlist(productId, sizeToUse);
         toast.info("Removed from Wishlist ❤️", { autoClose: 1500 });
       } else {
-        addToWishlist({ 
-          ...product, 
-          id: productId, 
-          selectedSize: sizeToUse 
+        addToWishlist({
+          ...product,
+          id: productId,
+          selectedSize: sizeToUse,
         });
         toast.success("Added to Wishlist ❤️", { autoClose: 1500 });
       }
-    } else {
+    } else if (modalAction === "cart") {
       handleAddToCart();
     }
 
     setShowSizeModal(false);
     setSelectedSize("");
+    setModalAction(null);
   };
 
   return (
@@ -121,7 +121,7 @@ function ProductCard({ product, onAddToCartCallback }) {
         className="card h-100 shadow-sm category-card position-relative"
         style={{ width: "100%", maxWidth: "310px", margin: "auto" }}
       >
-        {/* Wishlist Heart Icon */}
+        {/* Wishlist Heart */}
         <div
           onClick={toggleWishlist}
           className="position-absolute top-0 end-0 m-2 p-2 rounded-circle"
@@ -139,7 +139,7 @@ function ProductCard({ product, onAddToCartCallback }) {
           )}
         </div>
 
-        {/* Image & Product Link */}
+        {/* Product Image */}
         <Link to={`/product/${productId}`}>
           <img
             src={product.image || product.images?.[0] || "/placeholder.png"}
@@ -180,7 +180,7 @@ function ProductCard({ product, onAddToCartCallback }) {
         </div>
       </div>
 
-      {/* Size Selection Modal - Updated for both wishlist and cart */}
+      {/* Size Modal */}
       {showSizeModal && (
         <div
           className="modal fade show"
@@ -215,14 +215,12 @@ function ProductCard({ product, onAddToCartCallback }) {
                   onClick={() => {
                     setShowSizeModal(false);
                     setSelectedSize("");
+                    setModalAction(null);
                   }}
                 >
                   Cancel
                 </button>
-                <button
-                  className="btn btn-success"
-                  onClick={() => confirmSizeSelection(true)}
-                >
+                <button className="btn btn-success" onClick={confirmSizeSelection}>
                   Confirm
                 </button>
               </div>
