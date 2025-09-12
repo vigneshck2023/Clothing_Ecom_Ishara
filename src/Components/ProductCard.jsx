@@ -221,7 +221,7 @@ function ProductCard({ product, onAddToCartCallback }) {
                 </button>
                 <button
                   className="btn btn-success"
-                  onClick={() => confirmSizeSelection(true)} // true = for wishlist
+                  onClick={() => confirmSizeSelection(true)}
                 >
                   Confirm
                 </button>
