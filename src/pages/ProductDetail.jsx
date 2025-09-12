@@ -54,7 +54,6 @@ function ProductDetail() {
     const productToAdd = { ...product, qty: quantity, selectedSize };
     addToCart(productToAdd);
 
-    // Remove from wishlist if present
     const productId = product.id || product._id || product.name;
     const wishItem = wishlistItems.find(
       (i) => i.id === productId && i.selectedSize === selectedSize
@@ -89,46 +88,51 @@ function ProductDetail() {
       <Navbar />
       <div className="container my-5">
         <div className="row flex-column flex-md-row">
-          {/* Left side: images */}
-          <div className="col-12 col-md-6 d-flex flex-column flex-md-row">
-            <div
-              className="d-flex flex-row flex-md-column overflow-auto mb-3 mb-md-0"
-              style={{ gap: "10px", maxHeight: "100px" }}
-            >
-              {product.images?.map((img, i) => (
-                <img
-                  key={i}
-                  src={img}
-                  alt={`thumb-${i}`}
-                  onClick={() => setMainImage(img)}
-                  className={`border ${
-                    mainImage === img ? "border-dark" : "border-secondary"
-                  }`}
-                  style={{
-                    width: "60px",
-                    height: "55px",
-                    cursor: "pointer",
-                    borderRadius: "6px",
-                    objectFit: "cover",
-                  }}
-                />
-              ))}
-            </div>
-            <div className="flex-grow-1 d-flex justify-content-center align-items-center">
-              <img
-                src={mainImage}
-                alt="main"
-                className="img-fluid"
-                style={{
-                  maxHeight: "400px",
-                  width: "100%",
-                  objectFit: "contain",
-                  borderRadius: "8px",
-                  border: "1px solid #ddd",
-                }}
-              />
-            </div>
-          </div>
+{/* Left side: images */}
+<div className="col-12 col-md-6 d-flex flex-column flex-md-row">
+  {/* Thumbnails - no scroll */}
+  <div
+    className="d-flex flex-row flex-md-column mb-3 mb-md-0"
+    style={{ gap: "10px" }}
+  >
+    {product.images?.map((img, i) => (
+      <img
+        key={i}
+        src={img}
+        alt={`thumb-${i}`}
+        onClick={() => setMainImage(img)}
+        className={`border ${
+          mainImage === img ? "border-dark" : "border-secondary"
+        }`}
+        style={{
+          width: "70px",
+          height: "65px",
+          cursor: "pointer",
+          borderRadius: "6px",
+          objectFit: "cover",
+        }}
+      />
+    ))}
+  </div>
+
+  {/* Main image */}
+  <div className="flex-grow-1 d-flex justify-content-center align-items-center">
+    <img
+  src={mainImage}
+  alt="main"
+  className="img-fluid"
+  style={{
+    maxHeight: "500px",
+    width: "75%",
+    objectFit: "cover",
+    borderRadius: "0px",
+    border: "none",
+  }}
+/>
+  </div>
+</div>
+
+
 
           {/* Right side: product details */}
           <div className="col-12 col-md-6 mt-4 mt-md-0">
@@ -140,7 +144,9 @@ function ProductDetail() {
               {Array.isArray(product.description)
                 ? product.description.map((line, i) => <li key={i}>{line}</li>)
                 : typeof product.description === "string"
-                ? product.description.split("\n").map((line, i) => <li key={i}>{line}</li>)
+                ? product.description
+                    .split("\n")
+                    .map((line, i) => <li key={i}>{line}</li>)
                 : <li>No description available.</li>}
             </ul>
 
@@ -150,6 +156,7 @@ function ProductDetail() {
               <div>↩️ 10 Days Returnable</div>
             </div>
 
+            {/* Quantity */}
             <div className="my-3 d-flex align-items-center">
               <label className="me-2 mb-0">Quantity:</label>
               <input
@@ -162,6 +169,7 @@ function ProductDetail() {
               />
             </div>
 
+            {/* Sizes */}
             {product.sizes && (
               <div className="my-3">
                 <label className="me-2">Size:</label>
@@ -179,6 +187,7 @@ function ProductDetail() {
               </div>
             )}
 
+            {/* Buttons */}
             <div className="my-4 d-flex flex-wrap" style={{ gap: "10px" }}>
               <button
                 className="btn btn-primary"
