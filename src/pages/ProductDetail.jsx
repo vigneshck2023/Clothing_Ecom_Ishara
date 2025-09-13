@@ -92,7 +92,7 @@ function ProductDetail() {
           <div className="col-12 col-md-6 d-flex flex-column flex-md-row">
             {/* Thumbnails - no scroll */}
             <div
-              className="d-flex flex-row flex-md-column mb-3 mb-md-0"
+              className="d-flex flex-row flex-md-column mb-3 mb-md-0 justify-content-center px-4"
               style={{ gap: "10px" }}
             >
               {product.images?.map((img, i) => (
