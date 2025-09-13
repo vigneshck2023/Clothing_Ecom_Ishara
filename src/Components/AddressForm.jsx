@@ -4,21 +4,7 @@ const AddressForm = ({ newAddress, setNewAddress, addAddress }) => {
   return (
     <div>
       <h6 className="mb-3">Add / Edit Address</h6>
-      <input
-        type="text"
-        placeholder="Full Name"
-        className="form-control mb-2"
-        value={newAddress.name}
-        onChange={(e) => setNewAddress({ ...newAddress, name: e.target.value })}
-      />
-      <input
-        type="text"
-        placeholder="Phone"
-        className="form-control mb-2"
-        value={newAddress.phone}
-        onChange={(e) => setNewAddress({ ...newAddress, phone: e.target.value })}
-      />
-      <textarea
+        <textarea
         placeholder="Address"
         className="form-control mb-2"
         value={newAddress.address}

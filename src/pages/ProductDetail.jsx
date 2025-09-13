@@ -133,12 +133,12 @@ function ProductDetail() {
           </div>
 
           {/* Right side: product details */}
-          <div className="col-12 col-md-6 mt-4 mt-md-0">
+          <div className="col-12 col-md-6 mt-4 mt-md-0 flex-column align-items-center">
             <h3>{product.name}</h3>
             <h4 className="text-danger">₹{product.price}</h4>
 
             <h5 className="mt-4">Description:</h5>
-            <ul style={{ textAlign: "justify" }}>
+            <ul style={{ textAlign: "justify", maxWidth: "90%" }}>
               {Array.isArray(product.description) ? (
                 product.description.map((line, i) => <li key={i}>{line}</li>)
               ) : typeof product.description === "string" ? (
@@ -150,14 +150,14 @@ function ProductDetail() {
               )}
             </ul>
 
-            <div className="d-flex flex-wrap my-3" style={{ gap: "20px" }}>
+            <div className="d-flex flex-wrap my-3 justify-content-center" style={{ gap: "20px" }}>
               <div>🚚 Free Delivery</div>
               <div>💳 Secure Payment</div>
               <div>↩️ 10 Days Returnable</div>
             </div>
 
             {/* Quantity */}
-            <div className="my-3 d-flex align-items-center">
+            <div className="my-3 d-flex align-items-center justify-content-center" style={{ gap: "10px" }}>
               <label className="me-2 mb-0">Quantity:</label>
               <input
                 type="number"
@@ -165,13 +165,13 @@ function ProductDetail() {
                 min={1}
                 onChange={(e) => setQuantity(Number(e.target.value))}
                 className="form-control d-inline-block"
-                style={{ width: "70px" }}
+                style={{ width: "70px", display: "inline-block" }}
               />
             </div>
 
             {/* Sizes */}
             {product.sizes && (
-              <div className="my-3">
+              <div className="my-3 d-flex flex-wrap justify-content-center">
                 <label className="me-2">Size:</label>
                 {product.sizes.map((size, i) => (
                   <button
@@ -188,7 +188,7 @@ function ProductDetail() {
             )}
 
             {/* Buttons */}
-            <div className="my-4 d-flex flex-wrap" style={{ gap: "10px" }}>
+            <div className="my-4 d-flex flex-wrap justify-content-center" style={{ gap: "10px" }}>
               <button
                 className="btn btn-primary"
                 onClick={handleAddOrUpdateCart}
